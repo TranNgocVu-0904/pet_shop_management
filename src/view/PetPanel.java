@@ -4,6 +4,9 @@ import controller.PetController;
 import model.Cat;
 import model.Dog;
 import model.Pet;
+import view.TableButtonEditor;
+import view.TableButtonRenderer;
+import view.RowMapper;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -20,34 +23,29 @@ public class PetPanel extends JPanel {
 
     public PetPanel() {
         setLayout(new BorderLayout());
-        setBackground(Color.BLACK);
-        setBorder(BorderFactory.createEmptyBorder(30, 30, 30, 30));
+        setBackground(new Color(240, 236, 236));
+        setBorder(BorderFactory.createEmptyBorder(20, 40, 20, 40));
 
-        // === Top Panel ===
+        // === Top Bar ===
         JPanel topPanel = new JPanel(new BorderLayout());
-        topPanel.setBackground(Color.BLACK);
+        topPanel.setBackground(new Color(240, 236, 236));
+        topPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 20, 10));
 
-        // LEFT: [+] Button
-        JButton addBtn = new JButton("+");
-        addBtn.setFont(new Font("SansSerif", Font.BOLD, 22));
-        addBtn.setBackground(new Color(0, 128, 0));
-        addBtn.setForeground(Color.WHITE);
-        addBtn.setFocusPainted(false);
+        JButton addBtn = createRoundedButton("+");
         addBtn.setPreferredSize(new Dimension(50, 40));
         topPanel.add(addBtn, BorderLayout.WEST);
 
-        // RIGHT: Search + Filter
-        JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 5));
-        filterPanel.setBackground(Color.BLACK);
+        JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 0));
+        filterPanel.setBackground(new Color(240, 236, 236));
 
-        searchField = new JTextField("Enter ID...", 10);
-        styleTextField(searchField, "Enter ID...");
-
-        JButton searchBtn = new JButton("🔍");
-        styleButton(searchBtn);
+        searchField = createTextField("Enter ID...", 200, 35);
+        JButton searchBtn = createRoundedButton("Search");
+        searchBtn.setPreferredSize(new Dimension(100, 35));
 
         categoryBox = new JComboBox<>(new String[]{"All", "DOG", "CAT"});
         priceOrderBox = new JComboBox<>(new String[]{"None", "ASC", "DESC"});
+        styleComboBox(categoryBox);
+        styleComboBox(priceOrderBox);
 
         filterPanel.add(searchField);
         filterPanel.add(searchBtn);
@@ -56,7 +54,7 @@ public class PetPanel extends JPanel {
         topPanel.add(filterPanel, BorderLayout.EAST);
 
         // === Table Setup ===
-        String[] columns = {"ID", "Name", "Type", "Breed", "Age", "Price", "✏️", "🗑️"};
+        String[] columns = {"ID", "Name", "Type", "Breed", "Age", "Price", "Update", "Delete"};
         model = new DefaultTableModel(columns, 0) {
             public boolean isCellEditable(int row, int col) {
                 return col == 6 || col == 7;
@@ -66,15 +64,36 @@ public class PetPanel extends JPanel {
         petTable = new JTable(model);
         petTable.setRowHeight(30);
         JScrollPane scrollPane = new JScrollPane(petTable);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
 
-        petTable.getColumn("✏️").setCellRenderer(new ButtonRenderer("✏️"));
-        petTable.getColumn("🗑️").setCellRenderer(new ButtonRenderer("🗑️"));
-        petTable.getColumn("✏️").setCellEditor(new ButtonEditor(new JCheckBox(), this, "update"));
-        petTable.getColumn("🗑️").setCellEditor(new ButtonEditor(new JCheckBox(), this, "delete"));
+        petTable.getColumn("Update").setCellRenderer(new TableButtonRenderer("✏️"));
+        petTable.getColumn("Delete").setCellRenderer(new TableButtonRenderer("🗑️"));
 
-        // === Action Listeners ===
-        addBtn.addActionListener(e -> new PetDialog(this, null));
+        petTable.getColumn("Update").setCellEditor(new TableButtonEditor<>(
+                petTable,
+                "update",
+                this::mapRowToPet,
+                pet -> new PetFormDialog(this, pet),
+                null
+        ));
 
+        petTable.getColumn("Delete").setCellEditor(new TableButtonEditor<>(
+                petTable,
+                "delete",
+                this::mapRowToPet,
+                null,
+                pet -> {
+                    int confirm = JOptionPane.showConfirmDialog(this,
+                            "Delete pet ID " + pet.getId() + "?", "Confirm Delete",
+                            JOptionPane.YES_NO_OPTION);
+                    if (confirm == JOptionPane.YES_OPTION) {
+                        PetController.deletePet(pet.getId());
+                        refreshTable();
+                    }
+                }
+        ));
+
+        addBtn.addActionListener(e -> new PetFormDialog(this, null));
         searchBtn.addActionListener(e -> {
             try {
                 int id = Integer.parseInt(searchField.getText().trim());
@@ -82,23 +101,18 @@ public class PetPanel extends JPanel {
                         .filter(p -> p.getId() == id)
                         .findFirst().orElse(null);
                 model.setRowCount(0);
-                if (pet != null) {
-                    addPetToTable(pet);
-                } else {
-                    JOptionPane.showMessageDialog(this, "No pet found with ID " + id);
-                }
+                if (pet != null) addPetToTable(pet);
+                else JOptionPane.showMessageDialog(this, "No pet found with ID " + id);
             } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(this, "Please enter a valid ID.");
+                JOptionPane.showMessageDialog(this, "Invalid ID format.");
             }
         });
 
         categoryBox.addActionListener(e -> applyFilters());
         priceOrderBox.addActionListener(e -> applyFilters());
 
-        // === Load Initial Data ===
         loadAllPets();
 
-        // === Add Components ===
         add(topPanel, BorderLayout.NORTH);
         add(scrollPane, BorderLayout.CENTER);
     }
@@ -123,33 +137,75 @@ public class PetPanel extends JPanel {
 
     private void addPetToTable(Pet p) {
         model.addRow(new Object[]{
-            p.getId(),
-            p.getName(),
-            p.getClass().getSimpleName().toUpperCase(),
-            p.getBreed(),
-            p.getAge(),
-            p.getPrice(),
-            "✏️",
-            "🗑️"
+                p.getId(),
+                p.getName(),
+                p.getClass().getSimpleName().toUpperCase(),
+                p.getBreed(),
+                p.getAge(),
+                p.getPrice(),
+                "✏️",
+                "🗑️"
         });
     }
 
-    private void styleTextField(JTextField field, String placeholder) {
+    private Pet mapRowToPet(DefaultTableModel model, int row) {
+        int id = Integer.parseInt(model.getValueAt(row, 0).toString());
+        String name = model.getValueAt(row, 1).toString();
+        String type = model.getValueAt(row, 2).toString();
+        String breed = model.getValueAt(row, 3).toString();
+        int age = Integer.parseInt(model.getValueAt(row, 4).toString());
+        BigDecimal price = new BigDecimal(model.getValueAt(row, 5).toString());
+
+        Pet pet = switch (type) {
+            case "DOG" -> new Dog(name, breed, age, price);
+            case "CAT" -> new Cat(name, breed, age, price);
+            default -> throw new IllegalArgumentException("Invalid pet type");
+        };
+        pet.setId(id);
+        return pet;
+    }
+
+    // Reuse styling methods
+    private JButton createRoundedButton(String text) {
+        JButton button = new JButton(text);
+        button.setBackground(new Color(0x007BFF));
+        button.setForeground(Color.WHITE);
+        button.setFocusPainted(false);
+        button.setBorder(BorderFactory.createEmptyBorder(5, 15, 5, 15));
+        button.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        button.setBorder(BorderFactory.createLineBorder(new Color(0x0056B3), 1, true));
+        button.setContentAreaFilled(false);
+        button.setOpaque(true);
+        button.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                button.setBackground(new Color(0x0056B3));
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                button.setBackground(new Color(0x007BFF));
+            }
+        });
+        return button;
+    }
+
+    private JTextField createTextField(String placeholder, int width, int height) {
+        JTextField field = new JTextField(placeholder);
+        field.setPreferredSize(new Dimension(width, height));
         field.setForeground(Color.GRAY);
-        field.setBackground(Color.DARK_GRAY);
-        field.setCaretColor(Color.WHITE);
-        field.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        field.setPreferredSize(new Dimension(150, 35));
-        field.setText(placeholder);
+        field.setBackground(Color.WHITE);
+        field.setCaretColor(Color.BLACK);
+        field.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(Color.LIGHT_GRAY),
+                BorderFactory.createEmptyBorder(5, 10, 5, 10)
+        ));
 
         field.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent e) {
                 if (field.getText().equals(placeholder)) {
                     field.setText("");
-                    field.setForeground(Color.WHITE);
+                    field.setForeground(Color.BLACK);
                 }
             }
-
             public void focusLost(java.awt.event.FocusEvent e) {
                 if (field.getText().isEmpty()) {
                     field.setText(placeholder);
@@ -157,12 +213,14 @@ public class PetPanel extends JPanel {
                 }
             }
         });
+        return field;
     }
 
-    private void styleButton(JButton button) {
-        button.setBackground(Color.GRAY);
-        button.setForeground(Color.WHITE);
-        button.setFocusPainted(false);
+    private void styleComboBox(JComboBox<String> box) {
+        box.setPreferredSize(new Dimension(120, 35));
+        box.setBackground(Color.WHITE);
+        box.setForeground(Color.BLACK);
+        box.setFont(new Font("SansSerif", Font.PLAIN, 14));
     }
 
     public JTable getPetTable() {
