@@ -164,9 +164,9 @@ public class ProductDAO {
     
     //UPDATE
     public boolean updateProduct(Product product) throws SQLException {
-        String sql = "UPDATE " + TABLE + " SET name = ?, price = ?, type = ?, " +
-                     "material = ?, expiration_date = ?, nutritional_info = ?, " +
-                     "manufacture_date = ?, dosage = ? WHERE id = ?";
+        String sql = "UPDATE products SET name = ?, price = ?, stock_quantity = ?, type = ?, " +
+                    "material = ?, expiration_date = ?, nutritional_info = ?, " +
+                    "manufacture_date = ?, dosage = ? WHERE id = ?";
 
         try (Connection conn = connection_provider.getCon();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -196,7 +196,7 @@ public class ProductDAO {
                 ps.setString(9, med.getDosage());
             }
 
-            ps.setInt(9, product.getId());
+            ps.setInt(10, product.getId());
             return ps.executeUpdate() > 0;
         }
     }
