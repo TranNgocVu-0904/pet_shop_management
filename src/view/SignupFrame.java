@@ -27,7 +27,7 @@ public class SignupFrame extends JFrame {
         // 📋 Form Panel
         JPanel formPanel = new JPanel();
         formPanel.setLayout(new BoxLayout(formPanel, BoxLayout.Y_AXIS));
-        formPanel.setBackground(Color.BLACK);
+        formPanel.setBackground(new Color(240, 236, 236));
         formPanel.setBorder(BorderFactory.createEmptyBorder(30, 80, 30, 80)); // ⬅ padding all around
 
         JLabel title = new JLabel("Create Staff Account");
@@ -48,9 +48,9 @@ public class SignupFrame extends JFrame {
         JTextField[] fields = { nameField, emailField, phoneField, usernameField, passwordField, confirmPasswordField, salaryField };
         for (JTextField field : fields) {
             field.setMaximumSize(new Dimension(400, 40));
-            field.setForeground(Color.GRAY);
-            field.setBackground(Color.DARK_GRAY);
-            field.setCaretColor(Color.WHITE);
+            field.setForeground(Color.DARK_GRAY);
+            field.setBackground(Color.LIGHT_GRAY);
+            field.setCaretColor(Color.GRAY);
             field.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
             field.setFont(new Font("SansSerif", Font.PLAIN, 15));
             formPanel.add(field);
@@ -70,7 +70,7 @@ public class SignupFrame extends JFrame {
         // 📤 Create Button
         JButton createBtn = new JButton("Create Account");
         createBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
-        createBtn.setBackground(new Color(0, 128, 0));
+        createBtn.setBackground(new Color(125, 235, 255));
         createBtn.setForeground(Color.WHITE);
         createBtn.setFocusPainted(false);
         createBtn.setMaximumSize(new Dimension(400, 45));

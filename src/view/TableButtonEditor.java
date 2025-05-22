@@ -23,31 +23,51 @@ public class TableButtonEditor<T> extends DefaultCellEditor {
         this.mapper = mapper;
         this.onEdit = onEdit;
         this.onDelete = onDelete;
-        button = new JButton(action.equals("update") ? "✏️" : "🗑️");
+        this.button = new JButton();
+
+        // Label can be dynamic or passed from outside — simplified for clarity
+        switch (action) {
+            case "update" -> button.setText("✏️");
+            case "delete" -> button.setText("🗑️");
+            case "choose" -> button.setText("🛒");
+            default -> button.setText("?");
+        }
+
         button.setOpaque(true);
         button.addActionListener(e -> fireEditingStopped());
     }
 
+    @Override
     public Component getTableCellEditorComponent(JTable table, Object value,
                                                  boolean isSelected, int row, int column) {
         clicked = true;
         return button;
     }
 
+    @Override
     public Object getCellEditorValue() {
         if (clicked) {
             int row = table.getSelectedRow();
             T entity = mapper.mapRow((DefaultTableModel) table.getModel(), row);
-            if (action.equals("update")) {
-                onEdit.accept(entity);
-            } else {
-                onDelete.accept(entity);
+
+            switch (action) {
+                case "update" -> {
+                    if (onEdit != null) onEdit.accept(entity);
+                }
+                case "delete" -> {
+                    if (onDelete != null) onDelete.accept(entity);
+                }
+                case "choose" -> {
+                    if (onEdit != null) onEdit.accept(entity); // Treat `onEdit` as generic handler
+                }
+                default -> System.err.println("Unsupported action: " + action);
             }
         }
         clicked = false;
         return null;
     }
 
+    @Override
     public boolean stopCellEditing() {
         clicked = false;
         return super.stopCellEditing();

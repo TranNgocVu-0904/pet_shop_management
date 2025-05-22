@@ -14,6 +14,7 @@ import java.math.RoundingMode;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import model.Pet;
 
 public class BillingController {
     private final ShoppingCart cart = new ShoppingCart();
@@ -22,6 +23,10 @@ public class BillingController {
 
     public void addProductToCart(Product product, int quantity) {
         cart.addItem(product, quantity);
+    }
+
+    public void addPetToCart(Pet pet) {
+        cart.addItem(pet);
     }
 
     public void updateCartItem(int productId, int newQuantity) {

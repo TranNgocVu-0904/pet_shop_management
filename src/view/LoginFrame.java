@@ -28,11 +28,11 @@ public class LoginFrame extends JFrame {
         // 🧾 Center Panel: Form
         JPanel formPanel = new JPanel();
         formPanel.setLayout(new BoxLayout(formPanel, BoxLayout.Y_AXIS));
-        formPanel.setBackground(Color.BLACK);
+        formPanel.setBackground(new Color(240, 236, 236));
 
         JLabel title = new JLabel("Sign in");
-        title.setForeground(Color.WHITE);
-        title.setFont(new Font("SansSerif", Font.BOLD, 20));
+        title.setForeground(new Color(125,194,255));
+        title.setFont(new Font("SansSerif", Font.BOLD, 24));
         title.setAlignmentX(Component.CENTER_ALIGNMENT);
         title.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
 
@@ -46,9 +46,9 @@ public class LoginFrame extends JFrame {
         JTextField[] fields = { emailField, passwordField };
         for (JTextField field : fields) {
             field.setMaximumSize(new Dimension(300, 40));
-            field.setForeground(Color.GRAY);
-            field.setBackground(Color.DARK_GRAY);
-            field.setCaretColor(Color.WHITE);
+            field.setForeground(Color.DARK_GRAY);
+            field.setBackground(Color.LIGHT_GRAY);
+            field.setCaretColor(Color.GRAY);
             field.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
             field.setFont(new Font("SansSerif", Font.PLAIN, 14));
         }
@@ -60,17 +60,17 @@ public class LoginFrame extends JFrame {
 
         // 🎨 Button style
         signInButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-        signInButton.setBackground(new Color(139, 0, 0));
+        signInButton.setBackground(new Color(125, 235, 255));
         signInButton.setForeground(Color.WHITE);
         signInButton.setFocusPainted(false);
         signInButton.setMaximumSize(new Dimension(300, 40));
 
-        orLabel.setForeground(Color.LIGHT_GRAY);
+        orLabel.setForeground(Color.GRAY);
         orLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         orLabel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
 
         signUpButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-        signUpButton.setBackground(Color.GRAY);
+        signUpButton.setBackground(Color.LIGHT_GRAY);
         signUpButton.setForeground(Color.WHITE);
         signUpButton.setFocusPainted(false);
         signUpButton.setMaximumSize(new Dimension(300, 40));

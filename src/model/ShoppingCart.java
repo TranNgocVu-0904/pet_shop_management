@@ -8,13 +8,15 @@ public class ShoppingCart {
     private final Map<Integer, BillItem> items = new HashMap<>();
 
     public void addItem(Product product, int quantity) {
-        items.compute(product.getId(), (k, v) -> {
+        int key = product.getId(); // unique positive key for products
+        items.compute(key, (k, v) -> {
             if (v == null) {
                 return new BillItem(
                     product.getId(),
                     product.getName(),
                     product.getPrice(),
-                    quantity
+                    quantity,
+                    product.getClass().getSimpleName().toUpperCase()
                 );
             }
             v.setQuantity(v.getQuantity() + quantity);
@@ -22,15 +24,27 @@ public class ShoppingCart {
         });
     }
 
+    public void addItem(Pet pet) {
+        int key = pet.getId() * -1; // negative ID key for pets
+        if (!items.containsKey(key)) {
+            items.put(key, new BillItem(
+                pet.getId(),
+                pet.getName(),
+                pet.getPrice(),
+                pet.getClass().getSimpleName().toUpperCase()
+            ));
+        }
+    }
+
     public void updateQuantity(int productId, int newQuantity) {
         BillItem item = items.get(productId);
-        if (item != null) {
+        if (item != null && item.getItemType() == BillItem.ItemType.PRODUCT) {
             item.setQuantity(newQuantity);
         }
     }
 
-    public void removeItem(int productId) {
-        items.remove(productId);
+    public void removeItem(int id) {
+        items.remove(id);
     }
 
     public BigDecimal getTotal() {

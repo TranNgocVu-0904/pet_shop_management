@@ -13,71 +13,73 @@ public class HomeFrame extends JFrame {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         getContentPane().setLayout(new BorderLayout());
 
-        // ======= Sidebar =======
+        // ===== Sidebar =====
         JPanel sidebar = new JPanel();
         sidebar.setLayout(new BoxLayout(sidebar, BoxLayout.Y_AXIS));
-        sidebar.setBackground(Color.DARK_GRAY);
-        sidebar.setPreferredSize(new Dimension(200, getHeight()));
+        sidebar.setBackground(new Color(240, 236, 236));
+        sidebar.setPreferredSize(new Dimension(220, getHeight()));
 
         JLabel title = new JLabel("☰ Menu", SwingConstants.CENTER);
-        title.setForeground(Color.WHITE);
-        title.setFont(new Font("SansSerif", Font.BOLD, 20));
-        title.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
+        title.setForeground(new Color(0x476E91));
+        title.setFont(new Font("SansSerif", Font.BOLD, 22));
+        title.setBorder(BorderFactory.createEmptyBorder(30, 0, 30, 0));
         title.setAlignmentX(Component.CENTER_ALIGNMENT);
         sidebar.add(title);
 
-        // ======= Navigation Buttons =======
-        sidebar.add(createNavButton("Home", "home"));
-        sidebar.add(createNavButton("Pets", "pet"));
-        sidebar.add(createNavButton("Products", "product"));
-        sidebar.add(createNavButton("Customers", "customer"));
-        if (isManager) {
-            sidebar.add(createNavButton("Staff", "staff"));
-        }
+        // ===== Navigation Buttons =====
+        addNavButton(sidebar, "Home", "home");
+        addNavButton(sidebar, "Pets", "pet");
+        addNavButton(sidebar, "Products", "product");
+        addNavButton(sidebar, "Customers", "customer");
+        if (isManager) addNavButton(sidebar, "Staff", "staff");
+        addNavButton(sidebar, "Bill", "bill");
 
-        // ======= Spacer + Logout Button =======
+        // Spacer
         sidebar.add(Box.createVerticalGlue());
 
         JButton logoutBtn = new JButton("Logout");
-        logoutBtn.setBackground(Color.RED);
+        logoutBtn.setBackground(new Color(0xFF837D)); // RED
         logoutBtn.setForeground(Color.WHITE);
-        logoutBtn.setMaximumSize(new Dimension(180, 40));
+        logoutBtn.setFont(new Font("SansSerif", Font.BOLD, 16));
+        logoutBtn.setMaximumSize(new Dimension(180, 45));
         logoutBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
         logoutBtn.addActionListener(e -> {
             dispose();
-            new LoginFrame(); // ✅ Go back to login
+            new LoginFrame();
         });
 
         sidebar.add(Box.createVerticalStrut(10));
         sidebar.add(logoutBtn);
-        sidebar.add(Box.createVerticalStrut(20));
+        sidebar.add(Box.createVerticalStrut(30));
 
-        // ======= Content Area =======
-        contentPanel.setBackground(Color.BLACK);
+        // ===== Content =====
+        contentPanel.setBackground(Color.WHITE);
         contentPanel.add(new HomePanel(), "home");
-        contentPanel.add(new PetPanel(), "pet"); 
+        contentPanel.add(new PetPanel(), "pet");
         contentPanel.add(new ProductPanel(), "product");
         contentPanel.add(new CustomerPanel(), "customer");
         contentPanel.add(new StaffPanel(), "staff");
+        contentPanel.add(new BillingPanel(), "bill");
 
         layout.show(contentPanel, "home");
 
-        // ======= Add to Frame =======
         getContentPane().add(sidebar, BorderLayout.WEST);
         getContentPane().add(contentPanel, BorderLayout.CENTER);
-
         setVisible(true);
     }
 
-    private JButton createNavButton(String name, String panel) {
+    private void addNavButton(JPanel sidebar, String name, String panelKey) {
         JButton btn = new JButton(name);
-        btn.setMaximumSize(new Dimension(180, 40));
+        btn.setMaximumSize(new Dimension(180, 45));
         btn.setAlignmentX(Component.CENTER_ALIGNMENT);
         btn.setFocusPainted(false);
-        btn.setBackground(Color.GRAY);
+        btn.setBackground(new Color(0x7DC2FF));
         btn.setForeground(Color.WHITE);
-        btn.setFont(new Font("SansSerif", Font.PLAIN, 15));
-        btn.addActionListener(e -> layout.show(contentPanel, panel));
-        return btn;
+        btn.setFont(new Font("SansSerif", Font.BOLD, 16));
+        btn.setMargin(new Insets(20, 20, 20, 20));
+        btn.addActionListener(e -> layout.show(contentPanel, panelKey));
+
+        sidebar.add(btn);
+        sidebar.add(Box.createVerticalStrut(10));
     }
 }
