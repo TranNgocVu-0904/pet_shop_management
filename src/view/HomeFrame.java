@@ -1,5 +1,6 @@
 package view;
 
+import controller.AuthController;
 import javax.swing.*;
 import java.awt.*;
 
@@ -19,12 +20,37 @@ public class HomeFrame extends JFrame {
         sidebar.setBackground(new Color(240, 236, 236));
         sidebar.setPreferredSize(new Dimension(220, getHeight()));
 
-        JLabel title = new JLabel("☰ Menu", SwingConstants.CENTER);
-        title.setForeground(new Color(0x476E91));
-        title.setFont(new Font("SansSerif", Font.BOLD, 22));
-        title.setBorder(BorderFactory.createEmptyBorder(30, 0, 30, 0));
-        title.setAlignmentX(Component.CENTER_ALIGNMENT);
-        sidebar.add(title);
+//        JLabel title = new JLabel("☰ Menu", SwingConstants.CENTER);
+//        title.setForeground(new Color(0x476E91));
+//        title.setFont(new Font("SansSerif", Font.BOLD, 22));
+//        title.setBorder(BorderFactory.createEmptyBorder(30, 0, 30, 0));
+//        title.setAlignmentX(Component.CENTER_ALIGNMENT);
+//        sidebar.add(title);
+
+        // inside HomeFrame constructor
+        // Replace title:
+        sidebar.add(Box.createVerticalStrut(30));
+        JButton profileBtn = new JButton("👤 Profile");
+        profileBtn.setFont(new Font("SansSerif", Font.BOLD, 16));
+        profileBtn.setMaximumSize(new Dimension(180, 45));
+        profileBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
+        profileBtn.setFocusPainted(false);
+        profileBtn.setBackground(new Color(0x007BFF));
+        profileBtn.setForeground(Color.WHITE);
+        profileBtn.addActionListener(e -> {
+            new ProfileDialog(this);  
+        });
+        sidebar.add(profileBtn);
+
+        // Show hello username
+        JLabel helloUser = new JLabel("Hello " + AuthController.currentUser.getUsername(), SwingConstants.CENTER);
+        helloUser.setForeground(new Color(0x476E91));
+        helloUser.setFont(new Font("SansSerif", Font.BOLD, 14));
+        helloUser.setBorder(BorderFactory.createEmptyBorder(10, 0, 20, 0));
+        helloUser.setAlignmentX(Component.CENTER_ALIGNMENT);
+        sidebar.add(helloUser);
+
+    
 
         // ===== Navigation Buttons =====
         addNavButton(sidebar, "Home", "home");
@@ -80,6 +106,6 @@ public class HomeFrame extends JFrame {
         btn.addActionListener(e -> layout.show(contentPanel, panelKey));
 
         sidebar.add(btn);
-        sidebar.add(Box.createVerticalStrut(10));
+        sidebar.add(Box.createVerticalStrut(5));
     }
 }

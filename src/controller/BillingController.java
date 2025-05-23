@@ -1,5 +1,6 @@
 package controller;
 
+import dao.BillDAO;
 import dao.CustomerDAO;
 import model.Customer;
 import model.ShoppingCart;
@@ -20,6 +21,7 @@ public class BillingController {
     private final ShoppingCart cart = new ShoppingCart();
     private final BillingService billingService = new BillingService();
     private final CustomerDAO customerDao = new CustomerDAO();
+    private final BillDAO billDao = new BillDAO();
 
     public void addProductToCart(Product product, int quantity) {
         cart.addItem(product, quantity);
@@ -71,5 +73,14 @@ public class BillingController {
 
     public void clearCart() {
         cart.clear();
+    }
+    
+    // BillingController.java
+    public BigDecimal getTotalRevenue() {
+        return billDao.getTotalRevenue();
+    }
+
+    public int getTotalOrders() {
+        return billDao.getTotalOrderCount();
     }
 }

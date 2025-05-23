@@ -3,7 +3,7 @@ package view;
 import controller.ProductController;
 import controller.PetController;
 import controller.CustomerController;
-import controller.BillingController; // You'll need to create this if not available
+import controller.BillingController;
 
 import javax.swing.*;
 import java.awt.*;
@@ -16,17 +16,20 @@ public class HomePanel extends JPanel {
         setBackground(new Color(240, 236, 236));
         setBorder(BorderFactory.createEmptyBorder(90, 90, 90, 90));
 
-        // Fetch values
+        // Controllers (for proper non-static access)
+        BillingController billing = new BillingController();
+
+        // === Fetch data ===
         int totalProducts = ProductController.getAllProducts().size();
         int totalPets = PetController.getAllPets().size();
-//        int totalOrders = BillController.getAllBills().size(); // You'll need to implement this method
-//        BigDecimal totalRevenue = BillController.getTotalRevenue(); // Implement this as well
+        int totalOrders = billing.getTotalOrders();          // You already fixed this
+        BigDecimal totalRevenue = billing.getTotalRevenue();     // Also fixed
 
-        // Add cards
+        // === Add info cards ===
         add(createCard("📦 Total Products", String.valueOf(totalProducts)));
         add(createCard("🐾 Total Pets", String.valueOf(totalPets)));
-        add(createCard("💰 Total Revenue", "$0.00"));
-        add(createCard("🧾 Total Orders", "0"));
+        add(createCard("💰 Total Revenue", "$" + totalRevenue));
+        add(createCard("🧾 Total Orders", String.valueOf(totalOrders)));
     }
 
     private JPanel createCard(String title, String value) {
@@ -34,7 +37,7 @@ public class HomePanel extends JPanel {
         card.setLayout(new BorderLayout());
         card.setBackground(Color.WHITE);
         card.setBorder(BorderFactory.createLineBorder(Color.WHITE, 10));
-        card.setPreferredSize(new Dimension(70, 70)); // smaller size
+        card.setPreferredSize(new Dimension(150, 150));
 
         JLabel titleLabel = new JLabel(title, SwingConstants.CENTER);
         titleLabel.setForeground(new Color(0x476E91));

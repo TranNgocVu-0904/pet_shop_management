@@ -3,6 +3,7 @@ package dao;
 import model.Bill;
 import model.BillItem;
 import database.connection_provider;
+import java.math.BigDecimal;
 
 import java.sql.*;
 
@@ -51,6 +52,29 @@ public class BillDAO {
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
+        }
+    }
+    
+    // BillingService.java
+    public BigDecimal getTotalRevenue() {
+        try (Connection conn = connection_provider.getCon();
+             PreparedStatement ps = conn.prepareStatement("SELECT SUM(total_amount) FROM bills");
+             ResultSet rs = ps.executeQuery()) {
+            return rs.next() ? rs.getBigDecimal(1) : BigDecimal.ZERO;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return BigDecimal.ZERO;
+        }
+    }
+
+    public int getTotalOrderCount() {
+        try (Connection conn = connection_provider.getCon();
+             PreparedStatement ps = conn.prepareStatement("SELECT COUNT(*) FROM bills");
+             ResultSet rs = ps.executeQuery()) {
+            return rs.next() ? rs.getInt(1) : 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return 0;
         }
     }
 }
