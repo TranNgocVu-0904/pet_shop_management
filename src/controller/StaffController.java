@@ -6,6 +6,7 @@ import model.Staff;
 import controller.AuthController;
 import java.util.List;
 import java.sql.*;
+import model.SysUser;
 
 public class StaffController {
     private final UserDAO userDao = new UserDAO();
@@ -44,6 +45,15 @@ public class StaffController {
 
         try {
             return userDao.deleteStaff(id);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
+    public boolean updateUser(SysUser user) {
+        try {
+            return userDao.updateUser(user);
         } catch (SQLException e) {
             e.printStackTrace();
             return false;

@@ -99,13 +99,13 @@ public class BillingPanel extends JPanel {
                     if (billingController.processBill(bill)) {
                         billingController.applyLoyaltyPoints(selectedCustomer, bill.getTotalAmount());
 
-                        JFileChooser fileChooser = new JFileChooser();
-                        if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
-                            String path = fileChooser.getSelectedFile().getAbsolutePath();
-                            billingController.exportBillAsPdf(bill, path);
-                            JOptionPane.showMessageDialog(this, "Bill saved to PDF.");
-                        }
-
+//                        JFileChooser fileChooser = new JFileChooser();
+//                        if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+//                            String path = fileChooser.getSelectedFile().getAbsolutePath();
+//                            billingController.exportBillAsPdf(bill);
+//                            JOptionPane.showMessageDialog(this, "Bill saved to PDF.");
+//                        }
+                        JOptionPane.showMessageDialog(this, "Bill saved to PDF.");
                         refreshCart();
                     } else {
                         JOptionPane.showMessageDialog(this, "Error processing bill.");

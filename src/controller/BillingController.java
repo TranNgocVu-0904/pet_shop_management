@@ -66,8 +66,8 @@ public class BillingController {
         }
     }
 
-    public void exportBillAsPdf(Bill bill, String filePath) {
-        PdfGenerator.generateBillPdf(bill, filePath);
+    public void exportBillAsPdf(Bill bill) {
+        PdfGenerator.generateBillPdf(bill);
         cart.clear();
     }
 

@@ -3,6 +3,7 @@ package service;
 import model.Bill;
 import model.BillItem;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.math.BigDecimal;
 import java.time.format.DateTimeFormatter;
@@ -13,9 +14,20 @@ import com.itextpdf.text.pdf.PdfWriter;
 
 public class PdfGenerator {
 
-    public static void generateBillPdf(Bill bill, String filePath) {
-        Document document = new Document();
+    private static final String OUTPUT_DIR = "D:\\\\Project\\\\bill";
+
+    public static void generateBillPdf(Bill bill) {
         try {
+            // Ensure directory exists
+            File directory = new File(OUTPUT_DIR);
+            if (!directory.exists()) {
+                directory.mkdirs();
+            }
+
+            // Construct full path with filename: invoices/bill123.pdf
+            String filePath = OUTPUT_DIR + File.separator + "bill" + bill.getId() + ".pdf";
+
+            Document document = new Document();
             PdfWriter.getInstance(document, new FileOutputStream(filePath));
             document.open();
 
@@ -43,6 +55,8 @@ public class PdfGenerator {
 
             document.add(new Paragraph("\nTotal Amount: $" + bill.getTotalAmount()));
             document.close();
+
+            System.out.println("✅ Invoice PDF generated at: " + filePath);
 
         } catch (Exception e) {
             e.printStackTrace();

@@ -166,4 +166,21 @@ public class UserDAO {
         }
         return false;
     }
+    
+    public boolean updateUser(SysUser user) throws SQLException {
+        String sql = "UPDATE staff SET name = ?, email = ?, phone = ?, username = ?, password_hash = ? WHERE id = ?";
+
+        try (Connection conn = connection_provider.getCon();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, user.getName());
+            ps.setString(2, user.getEmail());
+            ps.setString(3, user.getPhone());
+            ps.setString(4, user.getUsername());
+            ps.setString(5, user.getPasswordHash());
+            ps.setInt(6, user.getId());
+
+            return ps.executeUpdate() > 0;
+        }
+    }
 }

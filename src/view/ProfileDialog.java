@@ -103,7 +103,7 @@ public class ProfileDialog extends JDialog {
         }
 
         StaffController controller = new StaffController();
-        boolean success = controller.updateStaff((Staff) updatedUser); // safe cast even for Manager
+        boolean success = controller.updateUser(updatedUser); // safe cast even for Manager
 
         if (success) {
             AuthController.currentUser = updatedUser;

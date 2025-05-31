@@ -2,6 +2,7 @@ package view;
 
 import controller.AuthController;
 import model.Manager;
+import util.PasswordFieldUtil;
 
 import javax.swing.*;
 import java.awt.*;
@@ -37,26 +38,24 @@ public class LoginFrame extends JFrame {
         title.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
 
         JTextField emailField = new JTextField("Email address");
-        JPasswordField passwordField = new JPasswordField("Password");
+        JPasswordField passwordField = new JPasswordField();
+        JPanel passwordPanel = PasswordFieldUtil.createPasswordFieldWithToggle(passwordField, "Password");
+        
         JButton signInButton = new JButton("SIGN IN");
         JLabel orLabel = new JLabel("OR");
         JButton signUpButton = new JButton("SIGN UP");
 
         // 📦 Styling fields
-        JTextField[] fields = { emailField, passwordField };
-        for (JTextField field : fields) {
-            field.setMaximumSize(new Dimension(300, 40));
-            field.setForeground(Color.DARK_GRAY);
-            field.setBackground(Color.LIGHT_GRAY);
-            field.setCaretColor(Color.GRAY);
-            field.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-            field.setFont(new Font("SansSerif", Font.PLAIN, 14));
-        }
+        emailField.setMaximumSize(new Dimension(300, 40));
+        emailField.setForeground(Color.GRAY);
+        emailField.setBackground(Color.LIGHT_GRAY);
+        emailField.setCaretColor(Color.GRAY);
+        emailField.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        emailField.setFont(new Font("SansSerif", Font.PLAIN, 14));
 
         // 🔒 Mask password and handle placeholder
-        passwordField.setEchoChar((char) 0); // Disable masking initially
+//        passwordField.setEchoChar((char) 0); // Disable masking initially
         addPlaceholderBehavior(emailField, "Email address");
-        addPlaceholderBehavior(passwordField, "Password", true);
 
         // 🎨 Button style
         signInButton.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -80,7 +79,7 @@ public class LoginFrame extends JFrame {
         formPanel.add(title);
         formPanel.add(emailField);
         formPanel.add(Box.createVerticalStrut(10));
-        formPanel.add(passwordField);
+        formPanel.add(passwordPanel);
         formPanel.add(Box.createVerticalStrut(20));
         formPanel.add(signInButton);
         formPanel.add(Box.createVerticalStrut(10));
@@ -104,10 +103,6 @@ public class LoginFrame extends JFrame {
                 JOptionPane.showMessageDialog(this, "Invalid email or password", "Login Failed", JOptionPane.ERROR_MESSAGE);
             }
         });
-        
-//        signInButton.addActionListener(e -> {
-//            new HomeFrame(isManager);
-//        });
 
         signUpButton.addActionListener(e -> {
             new SignupFrame();
@@ -117,11 +112,11 @@ public class LoginFrame extends JFrame {
     }
 
     // 🧠 Utility for placeholder behavior
-    private void addPlaceholderBehavior(JTextField field, String placeholder) {
-        addPlaceholderBehavior(field, placeholder, false);
-    }
+//    private void addPlaceholderBehavior(JTextField field, String placeholder) {
+//        addPlaceholderBehavior(field, placeholder);
+//    }
 
-    private void addPlaceholderBehavior(JTextField field, String placeholder, boolean isPassword) {
+    private void addPlaceholderBehavior(JTextField field, String placeholder) {
         field.setText(placeholder);
         field.setForeground(Color.GRAY);
 
@@ -131,9 +126,6 @@ public class LoginFrame extends JFrame {
                 if (field.getText().equals(placeholder)) {
                     field.setText("");
                     field.setForeground(Color.WHITE);
-                    if (isPassword && field instanceof JPasswordField pf) {
-                        pf.setEchoChar('•'); // show bullets on focus
-                    }
                 }
             }
 
@@ -142,9 +134,6 @@ public class LoginFrame extends JFrame {
                 if (field.getText().isEmpty()) {
                     field.setForeground(Color.GRAY);
                     field.setText(placeholder);
-                    if (isPassword && field instanceof JPasswordField pf) {
-                        pf.setEchoChar((char) 0); // hide bullets when showing placeholder
-                    }
                 }
             }
         });

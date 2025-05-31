@@ -32,4 +32,9 @@ public class Customer extends Human {
     public void resetLoyaltyPoints() {
         loyaltyPoints = 0;
     }
+    
+    @Override
+    public String toString() {
+        return getName() + " (" + getEmail() + ")";
+    }
 }
