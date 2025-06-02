@@ -2,6 +2,7 @@ package controller;
 
 import dao.BillDAO;
 import dao.CustomerDAO;
+import dao.PetDAO;
 import model.Customer;
 import model.ShoppingCart;
 import model.Product;
@@ -22,6 +23,7 @@ public class BillingController {
     private final BillingService billingService = new BillingService();
     private final CustomerDAO customerDao = new CustomerDAO();
     private final BillDAO billDao = new BillDAO();
+    private final PetDAO petDao = new PetDAO();
 
     public void addProductToCart(Product product, int quantity) {
         cart.addItem(product, quantity);
@@ -55,7 +57,19 @@ public class BillingController {
 
     public boolean processBill(Bill bill) throws SQLException {
         List<BillItem> items = bill.getItems();
-        return billingService.processPayment(bill, items);
+
+        // Process the bill
+        boolean success = billingService.processPayment(bill, items);
+        if (!success) return false;
+
+        // Mark pets as sold (status = 0)
+        for (BillItem item : items) {
+            if (item.getItemType() == BillItem.ItemType.PET) {
+                petDao.markPetSold(item.getPetId());
+            }
+        }
+
+        return true;
     }
 
     public void applyLoyaltyPoints(Customer customer, BigDecimal total) throws SQLException {

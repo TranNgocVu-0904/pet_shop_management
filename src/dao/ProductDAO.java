@@ -103,7 +103,7 @@ public class ProductDAO {
     //SELECT ALL
     public static List<Product> getAll() throws SQLException{
         List<Product> products = new ArrayList<>();
-        String sql = "SELECT * FROM " + TABLE;
+        String sql = "SELECT * FROM " + TABLE + " WHERE status = 1";
         
         try (Connection conn = connection_provider.getCon();
             Statement st = conn.createStatement();
@@ -118,7 +118,7 @@ public class ProductDAO {
 
     //SELECT BY ID
     public Product getById(int id) throws SQLException { 
-        String sql = "SELECT * FROM " + TABLE + " WHERE id = ?";
+        String sql = "SELECT * FROM " + TABLE + " WHERE id = ? AND status = 1";
         
         try(Connection conn = connection_provider.getCon();
             PreparedStatement ps = conn.prepareStatement(sql)){
@@ -136,7 +136,7 @@ public class ProductDAO {
     //SELECT BY CONDITION
     public List<Product> getByCondition(String category, String priceOrder) throws SQLException {
         List<Product> products = new ArrayList<>();
-        StringBuilder sql = new StringBuilder("SELECT * FROM " + TABLE + " WHERE 1=1");
+        StringBuilder sql = new StringBuilder("SELECT * FROM " + TABLE + " WHERE 1=1 AND status = 1");
         
         if (category != null) {
             sql.append(" AND type = ?");
@@ -203,16 +203,17 @@ public class ProductDAO {
     
     // UPDATE STOCK
     public boolean updateStock(int productId, int quantityChange) throws SQLException {
-        String sql = "UPDATE products SET stock_quantity = stock_quantity + ? WHERE id = ?";
-        try (Connection conn = connection_provider.getCon();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+        String updateSql = "UPDATE products SET stock_quantity = stock_quantity + ?, status = IF(stock_quantity + ? <= 0, 0, 1) WHERE id = ?";
 
-            ps.setInt(1, quantityChange); // use negative to subtract
-            ps.setInt(2, productId);
+        try (Connection conn = connection_provider.getCon();
+             PreparedStatement ps = conn.prepareStatement(updateSql)) {
+
+            ps.setInt(1, quantityChange);
+            ps.setInt(2, quantityChange);
+            ps.setInt(3, productId);
             return ps.executeUpdate() > 0;
         }
     }
-
     
     //DELETE
     public boolean deleteProduct(int id) throws SQLException {

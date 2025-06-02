@@ -38,7 +38,7 @@ public class PetDAO {
     // SELECT ALL
     public List<Pet> getAllPets() throws SQLException {
         List<Pet> pets = new ArrayList<>();
-        String sql = "SELECT * FROM " + TABLE;
+        String sql = "SELECT * FROM " + TABLE + " WHERE status = 1";
 
         try (Connection conn = connection_provider.getCon();
              Statement st = conn.createStatement();
@@ -53,7 +53,7 @@ public class PetDAO {
     
     // SELECT BY ID
     public Pet getById(int id) throws SQLException {
-        String sql = "SELECT * FROM " + TABLE + " WHERE id = ?";
+        String sql = "SELECT * FROM " + TABLE + " WHERE id = ? AND status = 1";
 
         try (Connection conn = connection_provider.getCon();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -69,7 +69,7 @@ public class PetDAO {
     //SELECT BY CONDITION
     public List<Pet> getByCondition(String type, String priceOrder) throws SQLException {
         List<Pet> pets = new ArrayList<>();
-        StringBuilder sql = new StringBuilder("SELECT * FROM " + TABLE + " WHERE 1=1");
+        StringBuilder sql = new StringBuilder("SELECT * FROM " + TABLE + " WHERE 1=1 AND status = 1");
 
         if (type != null) sql.append(" AND type = ?");
         if (priceOrder != null) sql.append(" ORDER BY price ").append(priceOrder.equalsIgnoreCase("DESC") ? "DESC" : "ASC");
@@ -139,5 +139,15 @@ public class PetDAO {
 
         pet.setId(rs.getInt("id"));
         return pet;
+    }
+    
+    // MARK PET THAT ALREADY SOLD
+    public boolean markPetSold(int id) throws SQLException {
+        String sql = "UPDATE " + TABLE + " SET status = 0 WHERE id = ?";
+        try (Connection conn = connection_provider.getCon();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            return ps.executeUpdate() > 0;
+        }
     }
 }

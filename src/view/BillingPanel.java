@@ -28,7 +28,9 @@ public class BillingPanel extends JPanel {
         topPanel.setBackground(getBackground());
 
         JButton addBtn = createRoundedButton("Add Item");
+        
         JButton chooseCustomerBtn = createRoundedButton("Choose Customer");
+        chooseCustomerBtn.setPreferredSize(new Dimension(160, 30));
 
         JLabel customerLabel = new JLabel("No customer selected");
         customerLabel.setFont(new Font("SansSerif", Font.BOLD, 14));
@@ -38,12 +40,34 @@ public class BillingPanel extends JPanel {
         topPanel.add(customerLabel);
 
         // === Table ===
-        String[] columns = {"ID", "Label", "Type", "Name", "Quantity", "Price"};
+        String[] columns = {"ID", "Label", "Type", "Name", "Quantity", "Price", "Update", "Delete"};
         tableModel = new DefaultTableModel(columns, 0) {
-            public boolean isCellEditable(int row, int col) { return false; }
+            public boolean isCellEditable(int row, int col) {
+                return col == 6 || col == 7;
+            }
         };
         cartTable = new JTable(tableModel);
         cartTable.setRowHeight(28);
+
+        // Add buttons to table
+        cartTable.getColumn("Update").setCellRenderer(new TableButtonRenderer("✏️"));
+        cartTable.getColumn("Delete").setCellRenderer(new TableButtonRenderer("🗑️"));
+
+        cartTable.getColumn("Update").setCellEditor(new TableButtonEditor<>(
+                cartTable,
+                "update",
+                this::mapRowToItem,
+                this::handleUpdate,
+                null
+        ));
+
+        cartTable.getColumn("Delete").setCellEditor(new TableButtonEditor<>(
+                cartTable,
+                "delete",
+                this::mapRowToItem,
+                null,
+                this::handleDelete
+        ));
 
         JScrollPane scrollPane = new JScrollPane(cartTable);
         scrollPane.setBorder(BorderFactory.createTitledBorder("Shopping Cart"));
@@ -53,9 +77,10 @@ public class BillingPanel extends JPanel {
         bottomPanel.setBackground(getBackground());
 
         totalField = new JTextField();
+        totalField.setPreferredSize(new Dimension(1000, 35));
         totalField.setFont(new Font("SansSerif", Font.BOLD, 18));
         totalField.setEditable(false);
-        totalField.setHorizontalAlignment(JTextField.RIGHT);
+        totalField.setHorizontalAlignment(JTextField.LEFT);
         totalField.setText("Total: $0.00");
         bottomPanel.add(totalField, BorderLayout.WEST);
 
@@ -92,19 +117,12 @@ public class BillingPanel extends JPanel {
                 Bill bill = billingController.finalizeBill(
                         selectedCustomer.getId(),
                         AuthController.currentUser.getId(),
-                        "CASH" // Simplified payment method
+                        "CASH"
                 );
 
                 try {
                     if (billingController.processBill(bill)) {
                         billingController.applyLoyaltyPoints(selectedCustomer, bill.getTotalAmount());
-
-//                        JFileChooser fileChooser = new JFileChooser();
-//                        if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
-//                            String path = fileChooser.getSelectedFile().getAbsolutePath();
-//                            billingController.exportBillAsPdf(bill);
-//                            JOptionPane.showMessageDialog(this, "Bill saved to PDF.");
-//                        }
                         JOptionPane.showMessageDialog(this, "Bill saved to PDF.");
                         refreshCart();
                     } else {
@@ -136,19 +154,65 @@ public class BillingPanel extends JPanel {
                     type,
                     item.getItemName(),
                     item.getQuantity(),
-                    item.getUnitPrice()
+                    item.getUnitPrice(),
+                    "✏️",
+                    "🗑️"
             });
         }
         totalField.setText("Total: $" + billingController.getCartTotal());
     }
-    
+
+    private BillItem mapRowToItem(DefaultTableModel model, int row) {
+        int id = Integer.parseInt(model.getValueAt(row, 0).toString());
+        String label = model.getValueAt(row, 1).toString();
+        String type = model.getValueAt(row, 2).toString();
+        String name = model.getValueAt(row, 3).toString();
+        int quantity = Integer.parseInt(model.getValueAt(row, 4).toString());
+        BigDecimal price = new BigDecimal(model.getValueAt(row, 5).toString());
+
+        if ("PRODUCT".equals(label)) {
+            return new BillItem(id, name, price, quantity, type); // productType = type
+        } else {
+            return new BillItem(id, name, price, type); // petType = type
+        }
+    }
+
+    private void handleUpdate(BillItem item) {
+        if (item.getItemType() == BillItem.ItemType.PRODUCT) {
+            String input = JOptionPane.showInputDialog(this, "Enter new quantity:", item.getQuantity());
+            try {
+                int qty = Integer.parseInt(input);
+                if (qty > 0) {
+                    billingController.updateCartItem(item.getProductId(), qty);
+                    refreshCart();
+                } else {
+                    JOptionPane.showMessageDialog(this, "Invalid quantity.");
+                }
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(this, "Invalid input.");
+            }
+        } else {
+            JOptionPane.showMessageDialog(this, "Pets cannot be updated.");
+        }
+    }
+
+    private void handleDelete(BillItem item) {
+        int confirm = JOptionPane.showConfirmDialog(this,
+                "Remove " + item.getItemName() + " from cart?",
+                "Confirm Delete", JOptionPane.YES_NO_OPTION);
+        if (confirm == JOptionPane.YES_OPTION) {
+            billingController.removeCartItem(item.getItemId());
+            refreshCart();
+        }
+    }
+
     private JButton createRoundedButton(String text) {
         JButton button = new JButton(text);
+        button.setPreferredSize(new Dimension(120, 30)); // ⬅️ Set size here
         button.setBackground(new Color(0x007BFF));
         button.setForeground(Color.WHITE);
         button.setFocusPainted(false);
-        button.setBorder(BorderFactory.createEmptyBorder(5, 15, 5, 15));
-        button.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        button.setFont(new Font("SansSerif", Font.PLAIN, 14)); // ⬅️ Optional: Increase font
         button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         button.setBorder(BorderFactory.createLineBorder(new Color(0x0056B3), 1, true));
         button.setContentAreaFilled(false);
@@ -163,4 +227,5 @@ public class BillingPanel extends JPanel {
         });
         return button;
     }
+
 }

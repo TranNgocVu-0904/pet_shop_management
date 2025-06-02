@@ -95,20 +95,14 @@ public class AddItemDialog extends JDialog {
         tableModel.setRowCount(0);
 
         if ("PRODUCT".equals(label)) {
-            List<Product> products = ProductController.getAllProducts().stream()
-                    .filter(p -> p.getClass().getSimpleName().equalsIgnoreCase(type))
-                    .toList();
-
+            List<Product> products = ProductController.getProductsByFilter(type.toUpperCase(), null);
             for (Product p : products) {
                 tableModel.addRow(new Object[]{
                         p.getId(), p.getName(), type, p.getPrice(), "🛒"
                 });
             }
         } else {
-            List<Pet> pets = PetController.getAllPets().stream()
-                    .filter(p -> p.getClass().getSimpleName().equalsIgnoreCase(type))
-                    .toList();
-
+            List<Pet> pets = PetController.getPetsByFilter(type.toUpperCase(), null);
             for (Pet p : pets) {
                 tableModel.addRow(new Object[]{
                         p.getId(), p.getName(), type, p.getPrice(), "🛒"
