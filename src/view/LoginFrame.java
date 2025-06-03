@@ -1,7 +1,6 @@
 package view;
 
 import controller.AuthController;
-import model.Manager;
 import util.PasswordFieldUtil;
 
 import javax.swing.*;
@@ -96,9 +95,8 @@ public class LoginFrame extends JFrame {
 
             boolean success = authController.login(email, password);
             if (success) {
-                dispose();
-                boolean isManager = AuthController.currentUser instanceof Manager;
-                new HomeFrame(isManager);
+                dispose();               
+                new HomeFrame(AuthController.isManager());
             } else {
                 JOptionPane.showMessageDialog(this, "Invalid email or password", "Login Failed", JOptionPane.ERROR_MESSAGE);
             }

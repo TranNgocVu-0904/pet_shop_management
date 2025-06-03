@@ -3,6 +3,7 @@ package controller;
 import dao.UserDAO;
 import model.SysUser;
 import model.Staff;
+import model.Manager;
 import util.BCrypt;
 import java.sql.*;
 
@@ -31,6 +32,10 @@ public class AuthController {
             e.printStackTrace();
             return false;
         }
+    }
+    
+    public static boolean isManager() {
+        return currentUser instanceof Manager;
     }
 }
 

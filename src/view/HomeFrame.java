@@ -63,6 +63,24 @@ public class HomeFrame extends JFrame {
         // Spacer
         sidebar.add(Box.createVerticalGlue());
 
+        JButton reloadBtn = new JButton("Reload");
+        reloadBtn.setBackground(new Color(0x28a745)); // Green-ish
+        reloadBtn.setForeground(Color.WHITE);
+        reloadBtn.setFont(new Font("SansSerif", Font.BOLD, 16));
+        reloadBtn.setMaximumSize(new Dimension(180, 45));
+        reloadBtn.setAlignmentX(Component.CENTER_ALIGNMENT);  
+        reloadBtn.setFocusPainted(false);
+
+        // 🔁 Logic to reload UI
+        reloadBtn.addActionListener(e -> {
+            dispose(); // Close current window
+            new HomeFrame(AuthController.isManager()); // Reopen HomeFrame with same role
+        });
+
+        sidebar.add(Box.createVerticalStrut(10));
+        sidebar.add(reloadBtn);
+
+        
         JButton logoutBtn = new JButton("Logout");
         logoutBtn.setBackground(new Color(0xFF837D)); // RED
         logoutBtn.setForeground(Color.WHITE);
