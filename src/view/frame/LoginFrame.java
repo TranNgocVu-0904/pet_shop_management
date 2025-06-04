@@ -20,11 +20,11 @@ public class LoginFrame extends JFrame {
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
-        // 🐾 Top Panel: Logo
-        JLabel logo = new JLabel();
-        ImageIcon logoIcon = new ImageIcon("src/Images/shopping-cart(2).png"); // <-- Replace with your logo path
-        logo.setIcon(new ImageIcon(logoIcon.getImage().getScaledInstance(150, 100, Image.SCALE_SMOOTH)));
-        logo.setHorizontalAlignment(SwingConstants.CENTER);
+        // Top Panel: Logo
+//        JLabel logo = new JLabel();
+//        ImageIcon logoIcon = new ImageIcon("src/Images/shopping-cart(2).png"); // <-- Replace with your logo path
+//        logo.setIcon(new ImageIcon(logoIcon.getImage().getScaledInstance(150, 100, Image.SCALE_SMOOTH)));
+//        logo.setHorizontalAlignment(SwingConstants.CENTER);
 
         // 🧾 Center Panel: Form
         JPanel formPanel = new JPanel();
@@ -86,7 +86,7 @@ public class LoginFrame extends JFrame {
         formPanel.add(orLabel);
         formPanel.add(signUpButton);
 
-        add(logo, BorderLayout.NORTH);
+//        add(logo, BorderLayout.NORTH);
         add(formPanel, BorderLayout.CENTER);
 
         // ✅ Events
