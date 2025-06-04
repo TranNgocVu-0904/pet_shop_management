@@ -20,13 +20,6 @@ public class HomeFrame extends JFrame {
         sidebar.setBackground(new Color(240, 236, 236));
         sidebar.setPreferredSize(new Dimension(220, getHeight()));
 
-//        JLabel title = new JLabel("☰ Menu", SwingConstants.CENTER);
-//        title.setForeground(new Color(0x476E91));
-//        title.setFont(new Font("SansSerif", Font.BOLD, 22));
-//        title.setBorder(BorderFactory.createEmptyBorder(30, 0, 30, 0));
-//        title.setAlignmentX(Component.CENTER_ALIGNMENT);
-//        sidebar.add(title);
-
         // inside HomeFrame constructor
         // Replace title:
         sidebar.add(Box.createVerticalStrut(30));

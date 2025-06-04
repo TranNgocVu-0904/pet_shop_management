@@ -20,9 +20,9 @@ public class SignupFrame extends JFrame {
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
-        JLabel logo = new JLabel();
-        logo.setIcon(new ImageIcon(new ImageIcon("src/view/petshop_logo.png").getImage().getScaledInstance(200, 120, Image.SCALE_SMOOTH)));
-        logo.setHorizontalAlignment(SwingConstants.CENTER);
+//        JLabel logo = new JLabel();
+//        logo.setIcon(new ImageIcon(new ImageIcon("src/images/petshop_logo.png").getImage().getScaledInstance(200, 120, Image.SCALE_SMOOTH)));
+//        logo.setHorizontalAlignment(SwingConstants.CENTER);
 
         JPanel formPanel = new JPanel();
         formPanel.setLayout(new BoxLayout(formPanel, BoxLayout.Y_AXIS));
@@ -39,7 +39,6 @@ public class SignupFrame extends JFrame {
         JTextField emailField = createTextField("Email");
         JTextField phoneField = createTextField("Phone");
         JTextField usernameField = createTextField("Username");
-        JTextField salaryField = createTextField("Salary");
 
         JPasswordField passwordField = new JPasswordField();
         JPasswordField confirmPasswordField = new JPasswordField();
@@ -66,11 +65,9 @@ public class SignupFrame extends JFrame {
         formPanel.add(Box.createVerticalStrut(20));
         formPanel.add(confirmPanel);
         formPanel.add(Box.createVerticalStrut(20));
-        formPanel.add(salaryField);
-        formPanel.add(Box.createVerticalStrut(20));
         formPanel.add(createBtn);
 
-        add(logo, BorderLayout.NORTH);
+//        add(logo, BorderLayout.NORTH);
         add(formPanel, BorderLayout.CENTER);
 
         createBtn.addActionListener(e -> {
@@ -81,14 +78,13 @@ public class SignupFrame extends JFrame {
                 String username = usernameField.getText().trim();
                 String password = new String(passwordField.getPassword()).trim();
                 String confirmPassword = new String(confirmPasswordField.getPassword()).trim();
-                BigDecimal salary = new BigDecimal(salaryField.getText().trim());
 
                 if (!password.equals(confirmPassword)) {
                     JOptionPane.showMessageDialog(this, "Passwords do not match!", "Error", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
 
-                Staff staff = new Staff(name, email, phone, username, salary);
+                Staff staff = new Staff(name, email, phone, username, new BigDecimal(0));
 
                 boolean success = authController.signup(staff, password);
                 if (success) {
