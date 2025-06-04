@@ -3,6 +3,7 @@ package controller;
 import dao.BillDAO;
 import dao.CustomerDAO;
 import dao.PetDAO;
+import dao.ProductDAO;
 import model.Customer;
 import model.ShoppingCart;
 import model.Product;
@@ -24,16 +25,36 @@ public class BillingController {
     private final CustomerDAO customerDao = new CustomerDAO();
     private final BillDAO billDao = new BillDAO();
     private final PetDAO petDao = new PetDAO();
+    private final ProductDAO productDao = new ProductDAO(); 
 
     public void addProductToCart(Product product, int quantity) {
+        BillItem existingItem = cart.getItem(product.getId());
+        int currentInCart = existingItem != null ? existingItem.getQuantity() : 0;
+        int remainingStock = product.getStockQuantity() - currentInCart;
+
+        if (quantity > remainingStock) {
+            throw new IllegalArgumentException("Only " + remainingStock + " items available for " + product.getName());
+        }
+
         cart.addItem(product, quantity);
     }
-
+    
     public void addPetToCart(Pet pet) {
         cart.addItem(pet);
     }
 
     public void updateCartItem(int productId, int newQuantity) {
+        Product product = ProductController.getAllProducts().stream()
+            .filter(p -> p.getId() == productId)
+            .findFirst()
+            .orElse(null);
+
+        if (product == null) return;
+
+        if (newQuantity > product.getStockQuantity()) {
+            throw new IllegalArgumentException("Stock exceeded. Only " + product.getStockQuantity() + " available.");
+        }
+
         cart.updateQuantity(productId, newQuantity);
     }
 
@@ -58,11 +79,20 @@ public class BillingController {
     public boolean processBill(Bill bill) throws SQLException {
         List<BillItem> items = bill.getItems();
 
-        // Process the bill
+        // Validate availability
+        for (BillItem item : items) {
+            if (item.getItemType() == BillItem.ItemType.PRODUCT) {
+                Product product = productDao.getById(item.getProductId());
+                if (product.getStockQuantity() < item.getQuantity()) {
+                    throw new IllegalStateException("Not enough stock for " + product.getName() +
+                            ". Required: " + item.getQuantity() + ", Available: " + product.getStockQuantity());
+                }
+            }
+        }
+
         boolean success = billingService.processPayment(bill, items);
         if (!success) return false;
 
-        // Mark pets as sold (status = 0)
         for (BillItem item : items) {
             if (item.getItemType() == BillItem.ItemType.PET) {
                 petDao.markPetSold(item.getPetId());

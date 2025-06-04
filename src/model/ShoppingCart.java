@@ -57,6 +57,10 @@ public class ShoppingCart {
         return new HashMap<>(items);
     }
 
+    public BillItem getItem(int productId) {
+        return items.get(productId);
+    }
+    
     public void clear() {
         items.clear();
     }
