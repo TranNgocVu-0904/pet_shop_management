@@ -14,7 +14,7 @@ import com.itextpdf.text.pdf.PdfWriter;
 
 public class PdfGenerator {
 
-    private static final String OUTPUT_DIR = "D:\\\\Project\\\\bill";
+    private static final String OUTPUT_DIR = "D:\\Project\\bill";
 
     public static void generateBillPdf(Bill bill) {
         try {

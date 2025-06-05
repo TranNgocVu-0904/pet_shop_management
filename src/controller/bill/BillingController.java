@@ -120,7 +120,6 @@ public class BillingController {
         cart.clear();
     }
     
-    // BillingController.java
     public BigDecimal getTotalRevenue() {
         return billDao.getTotalRevenue();
     }

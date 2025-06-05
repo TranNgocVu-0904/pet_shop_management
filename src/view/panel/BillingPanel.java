@@ -127,8 +127,9 @@ public class BillingPanel extends JPanel {
 
                 try {
                     if (billingController.processBill(bill)) {
+                        billingController.exportBillAsPdf(bill);
                         billingController.applyLoyaltyPoints(selectedCustomer, bill.getTotalAmount());
-                        JOptionPane.showMessageDialog(this, "Bill saved to PDF.");
+                        JOptionPane.showMessageDialog(this, "Bill saved.");
                         refreshCart();
                     } else {
                         JOptionPane.showMessageDialog(this, "Error processing bill.");
