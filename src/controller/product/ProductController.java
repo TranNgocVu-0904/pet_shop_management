@@ -53,4 +53,16 @@ public class ProductController {
             return false;
         }
     }
+    
+    public static List<Product> getAvailableProducts(String type) {
+        try {
+            return productDao.getAll().stream()
+                    .filter(p -> p.getClass().getSimpleName().equalsIgnoreCase(type))
+                    .filter(p -> p.getStockQuantity() > 0) // > 0 ensures not out of stock
+                    .toList();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return List.of();
+        }
+    }
 }

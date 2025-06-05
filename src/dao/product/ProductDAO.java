@@ -101,18 +101,17 @@ public class ProductDAO {
     }
 
     //SELECT ALL
-    public static List<Product> getAll() throws SQLException{
+    public static List<Product> getAll() throws SQLException {
         List<Product> products = new ArrayList<>();
-        String sql = "SELECT * FROM " + TABLE + " WHERE status = 1";
-        
+        String sql = "SELECT * FROM products"; 
+
         try (Connection conn = connection_provider.getCon();
-            Statement st = conn.createStatement();
-            ResultSet rs = st.executeQuery(sql)) {
-            
+             Statement st = conn.createStatement();
+             ResultSet rs = st.executeQuery(sql)) {
             while (rs.next()) {
                 products.add(createProductFromResultSet(rs));
             }
-        } 
+        }
         return products;
     }
 

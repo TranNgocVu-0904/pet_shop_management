@@ -99,7 +99,7 @@ public class AddItemDialog extends JDialog {
         tableModel.setRowCount(0);
 
         if ("PRODUCT".equals(label)) {
-            List<Product> products = ProductController.getProductsByFilter(type.toUpperCase(), null);
+            List<Product> products = ProductController.getAvailableProducts(type.toUpperCase());
             for (Product p : products) {
                 tableModel.addRow(new Object[]{
                         p.getId(), p.getName(), type, p.getPrice(), "🛒"
