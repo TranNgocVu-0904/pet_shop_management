@@ -25,16 +25,17 @@ public class Customer extends Human {
 
     // Add points (used in BillingService)
     public void addLoyaltyPoints(int points) {
-        if (points <= 0)
+        if (points < 0)
             throw new IllegalArgumentException("Invalid points");
         loyaltyPoints += points;
     }
 
-    // Optional: reset points if needed
-    public void resetLoyaltyPoints() {
-        loyaltyPoints = 0;
+    public void setLoyaltyPoints(int points) {
+        if (points < 0)
+            throw new IllegalArgumentException("Points cannot be negative");
+        this.loyaltyPoints = points;
     }
-    
+
     @Override
     public String toString() {
         return getName() + " (" + getEmail() + ")";

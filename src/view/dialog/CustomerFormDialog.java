@@ -74,22 +74,27 @@ public class CustomerFormDialog extends JDialog {
             String phone = phoneField.getText().trim();
             int loyalty = Integer.parseInt(loyaltyField.getText().trim());
 
-            Customer c;
+            if (loyalty < 0) {
+                JOptionPane.showMessageDialog(this, "Loyalty points cannot be negative.");
+                return;
+            }
+
             if (existingCustomer != null) {
                 existingCustomer.setName(name);
                 existingCustomer.setEmail(email);
                 existingCustomer.setPhone(phone);
-                existingCustomer.resetLoyaltyPoints();
-                existingCustomer.addLoyaltyPoints(loyalty);
+                existingCustomer.setLoyaltyPoints(loyalty); 
                 CustomerController.updateCustomer(existingCustomer);
             } else {
-                c = new Customer(name, email, phone);
-                c.addLoyaltyPoints(loyalty);
+                Customer c = new Customer(name, email, phone);
+                c.setLoyaltyPoints(loyalty); 
                 CustomerController.addCustomer(c);
             }
 
             parent.refreshTable();
             dispose();
+        } catch (NumberFormatException nfe) {
+            JOptionPane.showMessageDialog(this, "Loyalty points must be a valid number.");
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage());
         }
