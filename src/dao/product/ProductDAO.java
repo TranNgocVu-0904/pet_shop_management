@@ -163,7 +163,7 @@ public class ProductDAO {
     
     //UPDATE
     public boolean updateProduct(Product product) throws SQLException {
-        String sql = "UPDATE products SET name = ?, price = ?, stock_quantity = ?, type = ?, " +
+        String sql = "UPDATE products SET name = ?, price = ?, stock_quantity = ?, status = ?, type = ?, " +
                     "material = ?, expiration_date = ?, nutritional_info = ?, " +
                     "manufacture_date = ?, dosage = ? WHERE id = ?";
 
@@ -173,33 +173,38 @@ public class ProductDAO {
             ps.setString(1, product.getName());
             ps.setBigDecimal(2, product.getPrice());
             ps.setInt(3, product.getStockQuantity());
-            ps.setString(4, product.getClass().getSimpleName().toUpperCase());
+
+            // Automatically set status = 1 if stock > 0, else keep it 0
+            int newStatus = product.getStockQuantity() > 0 ? 1 : 0;
+            ps.setInt(4, newStatus);
+
+            ps.setString(5, product.getClass().getSimpleName().toUpperCase());
 
             if (product instanceof Toy toy) {
-                ps.setString(5, toy.getMaterial());
-                ps.setNull(6, Types.DATE);
-                ps.setNull(7, Types.VARCHAR);
-                ps.setNull(8, Types.DATE);
-                ps.setNull(9, Types.VARCHAR);
+                ps.setString(6, toy.getMaterial());
+                ps.setNull(7, Types.DATE);
+                ps.setNull(8, Types.VARCHAR);
+                ps.setNull(9, Types.DATE);
+                ps.setNull(10, Types.VARCHAR);
             } else if (product instanceof Food food) {
-                ps.setNull(5, Types.VARCHAR);
-                ps.setDate(6, Date.valueOf(food.getExpirationDate()));
-                ps.setString(7, food.getNutritionalInfo());
-                ps.setNull(8, Types.DATE);
-                ps.setNull(9, Types.VARCHAR);
+                ps.setNull(6, Types.VARCHAR);
+                ps.setDate(7, Date.valueOf(food.getExpirationDate()));
+                ps.setString(8, food.getNutritionalInfo());
+                ps.setNull(9, Types.DATE);
+                ps.setNull(10, Types.VARCHAR);
             } else if (product instanceof Medicine med) {
-                ps.setNull(5, Types.VARCHAR);
-                ps.setDate(6, Date.valueOf(med.getExpirationDate()));
-                ps.setNull(7, Types.VARCHAR);
-                ps.setDate(8, Date.valueOf(med.getManufactureDate()));
-                ps.setString(9, med.getDosage());
+                ps.setNull(6, Types.VARCHAR);
+                ps.setDate(7, Date.valueOf(med.getExpirationDate()));
+                ps.setNull(8, Types.VARCHAR);
+                ps.setDate(9, Date.valueOf(med.getManufactureDate()));
+                ps.setString(10, med.getDosage());
             }
 
-            ps.setInt(10, product.getId());
+            ps.setInt(11, product.getId());
             return ps.executeUpdate() > 0;
         }
     }
-    
+
     // UPDATE STOCK
     public boolean updateStock(int productId, int quantityChange) throws SQLException {
         String updateSql = "UPDATE products SET stock_quantity = stock_quantity + ?, status = IF(stock_quantity + ? <= 0, 0, 1) WHERE id = ?";
