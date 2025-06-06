@@ -30,6 +30,28 @@ public class CustomerDAO {
         }
     }
 
+    public List<Customer> getAllCustomers() throws SQLException {
+        List<Customer> customers = new ArrayList<>();
+        String sql = "SELECT * FROM " + TABLE;
+
+        try (Connection conn = connection_provider.getCon();
+             Statement st = conn.createStatement();
+             ResultSet rs = st.executeQuery(sql)) {
+
+            while (rs.next()) {
+                customers.add(new Customer(
+                    rs.getInt("id"),
+                    rs.getString("name"),
+                    rs.getString("email"),
+                    rs.getString("phone"),
+                    rs.getInt("loyalty_points")
+                ));
+            }
+        }
+
+        return customers;
+    }
+
     public Customer getCustomerById(int id) throws SQLException {
         String sql = "SELECT * FROM " + TABLE + " WHERE id = ?";
 
@@ -51,6 +73,29 @@ public class CustomerDAO {
         }
 
         return null;
+    }
+
+    public List<Customer> getByLoyaltyPoints(String order) throws SQLException {
+        List<Customer> customers = new ArrayList<>();
+        String sql = "SELECT * FROM " + TABLE + " ORDER BY loyalty_points " +
+                     ("DESC".equalsIgnoreCase(order) ? "DESC" : "ASC");
+
+        try (Connection conn = connection_provider.getCon();
+             Statement st = conn.createStatement();
+             ResultSet rs = st.executeQuery(sql)) {
+
+            while (rs.next()) {
+                customers.add(new Customer(
+                    rs.getInt("id"),
+                    rs.getString("name"),
+                    rs.getString("email"),
+                    rs.getString("phone"),
+                    rs.getInt("loyalty_points")
+                ));
+            }
+        }
+
+        return customers;
     }
 
     public boolean updateCustomer(Customer customer) throws SQLException {
@@ -78,50 +123,5 @@ public class CustomerDAO {
             ps.setInt(1, id);
             return ps.executeUpdate() > 0;
         }
-    }
-
-    public List<Customer> getAllCustomers() throws SQLException {
-        List<Customer> customers = new ArrayList<>();
-        String sql = "SELECT * FROM " + TABLE;
-
-        try (Connection conn = connection_provider.getCon();
-             Statement st = conn.createStatement();
-             ResultSet rs = st.executeQuery(sql)) {
-
-            while (rs.next()) {
-                customers.add(new Customer(
-                    rs.getInt("id"),
-                    rs.getString("name"),
-                    rs.getString("email"),
-                    rs.getString("phone"),
-                    rs.getInt("loyalty_points")
-                ));
-            }
-        }
-
-        return customers;
-    }
-
-    public List<Customer> getByLoyaltyPoints(String order) throws SQLException {
-        List<Customer> customers = new ArrayList<>();
-        String sql = "SELECT * FROM " + TABLE + " ORDER BY loyalty_points " +
-                     ("DESC".equalsIgnoreCase(order) ? "DESC" : "ASC");
-
-        try (Connection conn = connection_provider.getCon();
-             Statement st = conn.createStatement();
-             ResultSet rs = st.executeQuery(sql)) {
-
-            while (rs.next()) {
-                customers.add(new Customer(
-                    rs.getInt("id"),
-                    rs.getString("name"),
-                    rs.getString("email"),
-                    rs.getString("phone"),
-                    rs.getInt("loyalty_points")
-                ));
-            }
-        }
-
-        return customers;
     }
 }

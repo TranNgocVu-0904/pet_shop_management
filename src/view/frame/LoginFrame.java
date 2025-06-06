@@ -111,10 +111,6 @@ public class LoginFrame extends JFrame {
     }
 
     // 🧠 Utility for placeholder behavior
-//    private void addPlaceholderBehavior(JTextField field, String placeholder) {
-//        addPlaceholderBehavior(field, placeholder);
-//    }
-
     private void addPlaceholderBehavior(JTextField field, String placeholder) {
         field.setText(placeholder);
         field.setForeground(Color.GRAY);

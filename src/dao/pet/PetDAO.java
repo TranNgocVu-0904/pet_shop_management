@@ -11,7 +11,32 @@ import java.math.BigDecimal;
 
 public class PetDAO {
     private static final String TABLE = "pets";
+    
+    //CREATE FROM RESULT SET
+    private static Pet createPetFromResultSet(ResultSet rs) throws SQLException {
+        String type = rs.getString("type");
+        Pet pet;
 
+        switch (type.toUpperCase()) {
+            case "DOG" -> pet = new Dog(
+                rs.getString("name"),
+                rs.getString("breed"),
+                rs.getInt("age"),
+                rs.getBigDecimal("price")
+            );
+            case "CAT" -> pet = new Cat(
+                rs.getString("name"),
+                rs.getString("breed"),
+                rs.getInt("age"),
+                rs.getBigDecimal("price")
+            );
+            default -> throw new SQLException("Unknown pet type");
+        }
+
+        pet.setId(rs.getInt("id"));
+        return pet;
+    }
+    
     // CREATE
     public Pet savePet(Pet pet, String type) throws SQLException {
         String sql = "INSERT INTO " + TABLE + " (name, type, breed, age, price) VALUES (?, ?, ?, ?, ?)";
@@ -105,10 +130,9 @@ public class PetDAO {
         }
     }
     
-    //DELETE
-    public boolean deletePet(int id) throws SQLException {
-        String sql = "DELETE FROM " + TABLE + " WHERE id = ?";
-
+    // MARK PET THAT ALREADY SOLD
+    public boolean markPetSold(int id) throws SQLException {
+        String sql = "UPDATE " + TABLE + " SET status = 0 WHERE id = ?";
         try (Connection conn = connection_provider.getCon();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);
@@ -116,34 +140,10 @@ public class PetDAO {
         }
     }
     
-    //CREATE FROM RESULT SET
-    private static Pet createPetFromResultSet(ResultSet rs) throws SQLException {
-        String type = rs.getString("type");
-        Pet pet;
+    //DELETE
+    public boolean deletePet(int id) throws SQLException {
+        String sql = "DELETE FROM " + TABLE + " WHERE id = ?";
 
-        switch (type.toUpperCase()) {
-            case "DOG" -> pet = new Dog(
-                rs.getString("name"),
-                rs.getString("breed"),
-                rs.getInt("age"),
-                rs.getBigDecimal("price")
-            );
-            case "CAT" -> pet = new Cat(
-                rs.getString("name"),
-                rs.getString("breed"),
-                rs.getInt("age"),
-                rs.getBigDecimal("price")
-            );
-            default -> throw new SQLException("Unknown pet type");
-        }
-
-        pet.setId(rs.getInt("id"));
-        return pet;
-    }
-    
-    // MARK PET THAT ALREADY SOLD
-    public boolean markPetSold(int id) throws SQLException {
-        String sql = "UPDATE " + TABLE + " SET status = 0 WHERE id = ?";
         try (Connection conn = connection_provider.getCon();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setInt(1, id);

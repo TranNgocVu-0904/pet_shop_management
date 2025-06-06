@@ -123,7 +123,20 @@ public class UserDAO {
         }
         return null;
     }
-
+    
+    public boolean emailExists(String email) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM staff WHERE email = ?";
+        try (Connection conn = connection_provider.getCon();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, email);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        }
+        return false;
+    }
 
     public boolean updateStaff(Staff staff) throws SQLException {
         String sql = "UPDATE " + TABLE + " SET name = ?, email = ?, phone = ?, username = ?, password_hash = ?, salary = ? WHERE id = ? AND role = 'STAFF'";
@@ -143,30 +156,6 @@ public class UserDAO {
         }
     }
 
-    public boolean deleteStaff(int id) throws SQLException {
-        String sql = "DELETE FROM " + TABLE + " WHERE id = ? AND role = 'STAFF'";
-
-        try (Connection conn = connection_provider.getCon();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, id);
-            return ps.executeUpdate() > 0;
-        }
-    }
-    
-    public boolean emailExists(String email) throws SQLException {
-        String sql = "SELECT COUNT(*) FROM staff WHERE email = ?";
-        try (Connection conn = connection_provider.getCon();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, email);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getInt(1) > 0;
-                }
-            }
-        }
-        return false;
-    }
-    
     public boolean updateUser(SysUser user) throws SQLException {
         String sql = "UPDATE staff SET name = ?, email = ?, phone = ?, username = ?, password_hash = ? WHERE id = ?";
 
@@ -180,6 +169,16 @@ public class UserDAO {
             ps.setString(5, user.getPasswordHash());
             ps.setInt(6, user.getId());
 
+            return ps.executeUpdate() > 0;
+        }
+    }
+    
+    public boolean deleteStaff(int id) throws SQLException {
+        String sql = "DELETE FROM " + TABLE + " WHERE id = ? AND role = 'STAFF'";
+
+        try (Connection conn = connection_provider.getCon();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, id);
             return ps.executeUpdate() > 0;
         }
     }

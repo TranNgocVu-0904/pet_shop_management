@@ -55,7 +55,7 @@ public class BillDAO {
         }
     }
     
-    // BillingService.java
+    // Home panel
     public BigDecimal getTotalRevenue() {
         try (Connection conn = connection_provider.getCon();
              PreparedStatement ps = conn.prepareStatement("SELECT SUM(total_amount) FROM bills");

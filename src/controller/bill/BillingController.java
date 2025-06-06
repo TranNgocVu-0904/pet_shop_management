@@ -44,6 +44,22 @@ public class BillingController {
         cart.addItem(pet);
     }
 
+    public BigDecimal getCartTotal() {
+        return cart.getTotal();
+    }
+
+    public List<BillItem> getCartItemsAsList() {
+        return new ArrayList<>(cart.getItems().values());
+    }
+    
+    public BigDecimal getTotalRevenue() {
+        return billDao.getTotalRevenue();
+    }
+
+    public int getTotalOrders() {
+        return billDao.getTotalOrderCount();
+    }
+
     public void updateCartItem(int productId, int newQuantity) {
         Product product = ProductController.getAllProducts().stream()
             .filter(p -> p.getId() == productId)
@@ -61,14 +77,6 @@ public class BillingController {
 
     public void removeCartItem(int productId) {
         cart.removeItem(productId);
-    }
-
-    public BigDecimal getCartTotal() {
-        return cart.getTotal();
-    }
-
-    public List<BillItem> getCartItemsAsList() {
-        return new ArrayList<>(cart.getItems().values());
     }
 
     public Bill finalizeBill(int customerId, int staffId, String paymentMethod) {
@@ -118,13 +126,5 @@ public class BillingController {
 
     public void clearCart() {
         cart.clear();
-    }
-    
-    public BigDecimal getTotalRevenue() {
-        return billDao.getTotalRevenue();
-    }
-
-    public int getTotalOrders() {
-        return billDao.getTotalOrderCount();
     }
 }

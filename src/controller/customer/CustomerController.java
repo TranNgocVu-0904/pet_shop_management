@@ -19,12 +19,12 @@ public class CustomerController {
         }
     }
 
-    public static boolean updateCustomer(Customer customer) {
+    public static List<Customer> getAllCustomers() {
         try {
-            return customerDao.updateCustomer(customer);
+            return customerDao.getAllCustomers();
         } catch (SQLException e) {
             e.printStackTrace();
-            return false;
+            return List.of();
         }
     }
 
@@ -37,21 +37,21 @@ public class CustomerController {
         }
     }
 
-    public static List<Customer> getAllCustomers() {
-        try {
-            return customerDao.getAllCustomers();
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return List.of();
-        }
-    }
-
     public static List<Customer> getCustomersByLoyalty(String order) {
         try {
             return customerDao.getByLoyaltyPoints(order);
         } catch (SQLException e) {
             e.printStackTrace();
             return List.of();
+        }
+    }
+    
+    public static boolean updateCustomer(Customer customer) {
+        try {
+            return customerDao.updateCustomer(customer);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
         }
     }
 }

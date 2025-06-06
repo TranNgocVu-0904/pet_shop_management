@@ -7,6 +7,15 @@ import java.util.List;
 public class PetController {
     private static final PetDAO petDao = new PetDAO();
 
+    public static boolean addPet(Pet pet, String type) {
+        try {
+            return petDao.savePet(pet, type) != null;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
     public static List<Pet> getAllPets() {
         try {
             return petDao.getAllPets();
@@ -22,15 +31,6 @@ public class PetController {
         } catch (Exception e) {
             e.printStackTrace();
             return List.of();
-        }
-    }
-
-    public static boolean addPet(Pet pet, String type) {
-        try {
-            return petDao.savePet(pet, type) != null;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
         }
     }
 
