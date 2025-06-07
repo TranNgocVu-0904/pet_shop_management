@@ -34,7 +34,12 @@ public class ButtonCellEditor<T> extends DefaultCellEditor {
         }
 
         button.setOpaque(true);
-        button.addActionListener(e -> fireEditingStopped());
+        button.addActionListener(e -> {
+            SwingUtilities.invokeLater(() -> {
+                getCellEditorValue();      // Triggers action
+                fireEditingStopped();      // Ends editing cleanly
+            });
+        });
     }
 
     @Override
@@ -46,8 +51,13 @@ public class ButtonCellEditor<T> extends DefaultCellEditor {
 
     @Override
     public Object getCellEditorValue() {
-        if (clicked) {
-            int row = table.getSelectedRow();
+        int row = table.getSelectedRow();
+
+        // Defensive check
+        if (row < 0 || row >= table.getRowCount()) return null;
+
+        // Defer all actions to allow table state to settle
+        SwingUtilities.invokeLater(() -> {
             T entity = mapper.mapRow((DefaultTableModel) table.getModel(), row);
 
             switch (action) {
@@ -58,12 +68,12 @@ public class ButtonCellEditor<T> extends DefaultCellEditor {
                     if (onDelete != null) onDelete.accept(entity);
                 }
                 case "choose" -> {
-                    if (onEdit != null) onEdit.accept(entity); // Treat `onEdit` as generic handler
+                    if (onEdit != null) onEdit.accept(entity); // generic choose handler
                 }
                 default -> System.err.println("Unsupported action: " + action);
             }
-        }
-        clicked = false;
+        });
+
         return null;
     }
 

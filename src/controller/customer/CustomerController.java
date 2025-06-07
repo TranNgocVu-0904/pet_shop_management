@@ -54,4 +54,13 @@ public class CustomerController {
             return false;
         }
     }
+
+    public static boolean deleteCustomer(int customerId) {
+        try {
+            return customerDao.deleteCustomer(customerId);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 }

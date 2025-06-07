@@ -46,7 +46,8 @@ public class StaffPanel extends JPanel {
         topPanel.add(searchPanel, BorderLayout.EAST);
 
         // === Table Setup ===
-        String[] columns = {"ID", "Name", "Email", "Phone", "Username", "Salary", "Update", "Delete"};
+//        String[] columns = {"ID", "Name", "Email", "Phone", "Username", "Salary", "Update", "Delete"};
+        String[] columns = {"ID", "Name", "Email", "Phone", "Username", "Salary", "Update"};
         model = new DefaultTableModel(columns, 0) {
             public boolean isCellEditable(int row, int col) {
                 return col == 6 || col == 7;
@@ -59,7 +60,7 @@ public class StaffPanel extends JPanel {
         scrollPane.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
 
         staffTable.getColumn("Update").setCellRenderer(new ButtonCellRenderer("✏️"));
-        staffTable.getColumn("Delete").setCellRenderer(new ButtonCellRenderer("🗑️"));
+//        staffTable.getColumn("Delete").setCellRenderer(new ButtonCellRenderer("🗑️"));
 
         staffTable.getColumn("Update").setCellEditor(new ButtonCellEditor<>(
                 staffTable,
@@ -75,24 +76,24 @@ public class StaffPanel extends JPanel {
                 null
         ));
 
-        staffTable.getColumn("Delete").setCellEditor(new ButtonCellEditor<>(
-                staffTable,
-                "delete",
-                this::mapRowToStaff,
-                null,
-                staff -> {
-                    if (!(AuthController.currentUser instanceof Manager)) {
-                        JOptionPane.showMessageDialog(this, "Only managers can delete staff.");
-                        return;
-                    }
-                    int confirm = JOptionPane.showConfirmDialog(this,
-                            "Delete staff ID " + staff.getId() + "?", "Confirm Delete", JOptionPane.YES_NO_OPTION);
-                    if (confirm == JOptionPane.YES_OPTION) {
-                        controller.deleteStaff(staff.getId());
-                        refreshTable();
-                    }
-                }
-        ));
+//        staffTable.getColumn("Delete").setCellEditor(new ButtonCellEditor<>(
+//                staffTable,
+//                "delete",
+//                this::mapRowToStaff,
+//                null,
+//                staff -> {
+//                    if (!(AuthController.currentUser instanceof Manager)) {
+//                        JOptionPane.showMessageDialog(this, "Only managers can delete staff.");
+//                        return;
+//                    }
+//                    int confirm = JOptionPane.showConfirmDialog(this,
+//                            "Delete staff ID " + staff.getId() + "?", "Confirm Delete", JOptionPane.YES_NO_OPTION);
+//                    if (confirm == JOptionPane.YES_OPTION) {
+//                        controller.deleteStaff(staff.getId());
+//                        refreshTable();
+//                    }
+//                }
+//        ));
 
         addBtn.addActionListener(e -> new StaffFormDialog(this, null));
 
@@ -122,6 +123,19 @@ public class StaffPanel extends JPanel {
         controller.getAllStaff().forEach(this::addStaffToTable);
     }
 
+//    private void addStaffToTable(Staff s) {
+//        model.addRow(new Object[]{
+//                s.getId(),
+//                s.getName(),
+//                s.getEmail(),
+//                s.getPhone(),
+//                s.getUsername(),
+//                s.getSalary(),
+//                "✏️",
+//                "🗑️"
+//        });
+//    }
+    
     private void addStaffToTable(Staff s) {
         model.addRow(new Object[]{
                 s.getId(),
@@ -130,8 +144,7 @@ public class StaffPanel extends JPanel {
                 s.getPhone(),
                 s.getUsername(),
                 s.getSalary(),
-                "✏️",
-                "🗑️"
+                "✏️"
         });
     }
 

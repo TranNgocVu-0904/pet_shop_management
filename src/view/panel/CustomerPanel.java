@@ -49,7 +49,9 @@ public class CustomerPanel extends JPanel {
         topPanel.add(filterPanel, BorderLayout.EAST);
 
         // === Table Setup
-        String[] columns = {"ID", "Name", "Email", "Phone", "Loyalty", "✏️", "🗑️"};
+        // Disable delete functionality because FK constrain in bill (maybe implement soft-delete in near future
+//        String[] columns = {"ID", "Name", "Email", "Phone", "Loyalty", "✏️", "🗑️"};
+        String[] columns = {"ID", "Name", "Email", "Phone", "Loyalty", "✏️"};
         model = new DefaultTableModel(columns, 0) {
             public boolean isCellEditable(int row, int col) {
                 return col >= 5;
@@ -60,7 +62,8 @@ public class CustomerPanel extends JPanel {
         customerTable.setRowHeight(30);
 
         customerTable.getColumn("✏️").setCellRenderer(new ButtonCellRenderer("✏️"));
-        customerTable.getColumn("🗑️").setCellRenderer(new ButtonCellRenderer("🗑️"));
+        // Disable delete functionality because FK constrain in bill (maybe implement soft-delete in near future
+//        customerTable.getColumn("🗑️").setCellRenderer(new ButtonCellRenderer("🗑️"));
 
         customerTable.getColumn("✏️").setCellEditor(new ButtonCellEditor<>(
                 customerTable,
@@ -73,22 +76,28 @@ public class CustomerPanel extends JPanel {
                 null
         ));
 
-        customerTable.getColumn("🗑️").setCellEditor(new ButtonCellEditor<>(
-                customerTable,
-                "delete",
-                (model, row) -> {
-                    int id = Integer.parseInt(model.getValueAt(row, 0).toString());
-                    return CustomerController.getCustomerById(id);
-                },
-                null,
-                customer -> {
-                    int confirm = JOptionPane.showConfirmDialog(this, "Delete customer ID " + customer.getId() + "?", "Confirm", JOptionPane.YES_NO_OPTION);
-                    if (confirm == JOptionPane.YES_OPTION) {
-                        CustomerController.updateCustomer(customer);
-                        refreshTable();
-                    }
-                }
-        ));
+        // Disable delete functionality because FK constrain in bill (maybe implement soft-delete in near future
+//        customerTable.getColumn("🗑️").setCellEditor(new ButtonCellEditor<>(
+//                customerTable,
+//                "delete",
+//                (model, row) -> {
+//                    int id = Integer.parseInt(model.getValueAt(row, 0).toString());
+//                    return CustomerController.getCustomerById(id);
+//                },
+//                null,
+//                customer -> {
+//                    int confirm = JOptionPane.showConfirmDialog(this, "Delete customer ID " + customer.getId() + "?", "Confirm", JOptionPane.YES_NO_OPTION);
+//                    if (confirm == JOptionPane.YES_OPTION) {
+//                        boolean success = CustomerController.deleteCustomer(customer.getId());
+//                        if (success) {
+//                            JOptionPane.showMessageDialog(this, "Customer deleted.");
+//                            refreshTable();
+//                        } else {
+//                            JOptionPane.showMessageDialog(this, "Failed to delete customer.");
+//                        }
+//                    }
+//                }
+//        ));
 
         JScrollPane scrollPane = new JScrollPane(customerTable);
         scrollPane.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
@@ -131,9 +140,16 @@ public class CustomerPanel extends JPanel {
         CustomerController.getCustomersByLoyalty(order).forEach(this::addCustomerToTable);
     }
 
+    // Disable delete functionality because FK constrain in bill (maybe implement soft-delete in near future
+//    private void addCustomerToTable(Customer c) {
+//        model.addRow(new Object[]{
+//                c.getId(), c.getName(), c.getEmail(), c.getPhone(), c.getLoyaltyPoints(), "✏️", "🗑️"
+//        });
+//    }
+    
     private void addCustomerToTable(Customer c) {
         model.addRow(new Object[]{
-                c.getId(), c.getName(), c.getEmail(), c.getPhone(), c.getLoyaltyPoints(), "✏️", "🗑️"
+                c.getId(), c.getName(), c.getEmail(), c.getPhone(), c.getLoyaltyPoints(), "✏️"
         });
     }
 
