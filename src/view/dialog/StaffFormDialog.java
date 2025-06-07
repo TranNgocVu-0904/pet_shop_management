@@ -125,7 +125,8 @@ public class StaffFormDialog extends JDialog {
                     return;
                 }
 
-                Staff newStaff = new Staff(name, email, phone, username, password, salary);
+                String hashed = BCrypt.hashpw(password, BCrypt.gensalt());
+                Staff newStaff = new Staff(name, email, phone, username, hashed, salary);
                 if (!controller.addStaff(newStaff)) {
                     JOptionPane.showMessageDialog(this, "Add failed.");
                 }
