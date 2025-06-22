@@ -11,7 +11,6 @@ import util.ui.ButtonCellRenderer;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.math.BigDecimal;
 import java.util.List;
 import view.dialog.ProductFormDialog;
 
@@ -21,6 +20,12 @@ public class ProductPanel extends JPanel {
     private JTextField searchField;
     private JComboBox<String> categoryBox;
     private JComboBox<String> priceOrderBox;
+
+    // Danh sách sản phẩm hiện tại được load từ DB
+    private List<Product> currentProducts;
+
+    // Controller
+    private final ProductController productController = new ProductController();
 
     public ProductPanel() {
         setLayout(new BorderLayout());
@@ -55,8 +60,9 @@ public class ProductPanel extends JPanel {
 
         String[] columns = {"ID", "Name", "Type", "Quantity", "Price", "Details", "Update", "Delete"};
         model = new DefaultTableModel(columns, 0) {
+            @Override
             public boolean isCellEditable(int row, int col) {
-                return col == 6 || col == 7;
+                return col == 6 || col == 7; // chỉ cột Update và Delete được edit (bấm button)
             }
         };
 
@@ -65,6 +71,7 @@ public class ProductPanel extends JPanel {
         JScrollPane scrollPane = new JScrollPane(productTable);
         scrollPane.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
 
+        // Renderer và Editor cho cột Update (✏️) và Delete (🗑️)
         productTable.getColumn("Update").setCellRenderer(new ButtonCellRenderer("✏️"));
         productTable.getColumn("Delete").setCellRenderer(new ButtonCellRenderer("🗑️"));
 
@@ -72,7 +79,13 @@ public class ProductPanel extends JPanel {
                 productTable,
                 "update",
                 this::mapRowToProduct,
-                product -> new ProductFormDialog(this, product),
+                product -> {
+                    // Mở dialog sửa sản phẩm, khi dialog đóng gọi refreshTable để cập nhật lại bảng
+                    ProductFormDialog dialog = new ProductFormDialog(this, product);
+                    dialog.setVisible(true);
+                    dialog.setVisible(true);
+                    refreshTable();
+                },
                 null
         ));
 
@@ -86,18 +99,28 @@ public class ProductPanel extends JPanel {
                             "Delete product ID " + product.getId() + "?", "Confirm Delete",
                             JOptionPane.YES_NO_OPTION);
                     if (confirm == JOptionPane.YES_OPTION) {
-                        ProductController.deleteProduct(product.getId());
-                        refreshTable();
+                        boolean success = productController.deleteProduct(product.getId());
+                        if(success) {
+                            JOptionPane.showMessageDialog(this, "Deleted product ID " + product.getId());
+                            refreshTable();
+                        } else {
+                            JOptionPane.showMessageDialog(this, "Failed to delete product ID " + product.getId());
+                        }
                     }
                 }
         ));
 
-        addBtn.addActionListener(e -> new ProductFormDialog(this, null));
+        addBtn.addActionListener(e -> {
+            // Mở dialog thêm mới sản phẩm, khi dialog đóng gọi refreshTable
+            ProductFormDialog dialog = new ProductFormDialog(this, null);
+            dialog.setVisible(true);
+            refreshTable();
+        });
 
         searchBtn.addActionListener(e -> {
             try {
                 int id = Integer.parseInt(searchField.getText().trim());
-                Product p = ProductController.getAllProducts().stream()
+                Product p = currentProducts.stream()
                         .filter(prod -> prod.getId() == id)
                         .findFirst().orElse(null);
                 model.setRowCount(0);
@@ -119,8 +142,8 @@ public class ProductPanel extends JPanel {
 
     private void loadAllProducts() {
         model.setRowCount(0);
-        List<Product> products = ProductController.getAllProducts();
-        products.forEach(this::addProductToTable);
+        currentProducts = productController.getAllProducts();
+        currentProducts.forEach(this::addProductToTable);
     }
 
     private void applyFilters() {
@@ -130,9 +153,9 @@ public class ProductPanel extends JPanel {
         String priceOrder = priceOrderBox.getSelectedItem().toString();
         if (priceOrder.equals("None")) priceOrder = null;
 
-        List<Product> filtered = ProductController.getProductsByFilter(category, priceOrder);
+        currentProducts = productController.getProductsByFilter(category, priceOrder);
         model.setRowCount(0);
-        filtered.forEach(this::addProductToTable);
+        currentProducts.forEach(this::addProductToTable);
     }
 
     private void addProductToTable(Product p) {
@@ -146,27 +169,25 @@ public class ProductPanel extends JPanel {
         }
 
         model.addRow(new Object[]{
-            p.getId(),
-            p.getName(),
-            p.getClass().getSimpleName().toUpperCase(),
-            p.getStockQuantity(),
-            p.getPrice(),
-            details,
-            "✏️",
-            "🗑️"
+                p.getId(),
+                p.getName(),
+                p.getClass().getSimpleName().toUpperCase(),
+                p.getStockQuantity(),
+                p.getPrice(),
+                details,
+                "✏️",
+                "🗑️"
         });
     }
-
 
     private Product mapRowToProduct(DefaultTableModel model, int row) {
         int id = Integer.parseInt(model.getValueAt(row, 0).toString());
 
-        return ProductController.getAllProducts().stream()
+        return currentProducts.stream()
                 .filter(p -> p.getId() == id)
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Product not found with ID " + id));
     }
-
 
     private JButton createRoundedButton(String text) {
         JButton button = new JButton(text);
@@ -180,10 +201,12 @@ public class ProductPanel extends JPanel {
         button.setContentAreaFilled(false);
         button.setOpaque(true);
         button.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
             public void mouseEntered(java.awt.event.MouseEvent evt) {
                 button.setBackground(new Color(0x0056B3));
             }
 
+            @Override
             public void mouseExited(java.awt.event.MouseEvent evt) {
                 button.setBackground(new Color(0x007BFF));
             }
@@ -203,6 +226,7 @@ public class ProductPanel extends JPanel {
         ));
 
         field.addFocusListener(new java.awt.event.FocusAdapter() {
+            @Override
             public void focusGained(java.awt.event.FocusEvent e) {
                 if (field.getText().equals(placeholder)) {
                     field.setText("");
@@ -210,6 +234,7 @@ public class ProductPanel extends JPanel {
                 }
             }
 
+            @Override
             public void focusLost(java.awt.event.FocusEvent e) {
                 if (field.getText().isEmpty()) {
                     field.setText(placeholder);

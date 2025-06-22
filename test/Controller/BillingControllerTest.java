@@ -1,12 +1,14 @@
 package Controller;
 
-import model.Food;
-import model.Toy;
-import controller.BillingController;
+import model.product.Food;
+import model.product.Toy;
+import controller.bill.BillingController;
 import org.junit.Test;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+
+
 
 import static org.junit.Assert.*;
 

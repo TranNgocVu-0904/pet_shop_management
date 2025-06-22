@@ -1,12 +1,17 @@
 package service.auth;
 
 import dao.user.UserDAO;
+
 import model.user.SysUser;
-import util.hash.BCrypt;
-import java.sql.SQLException;
+
 import model.user.Staff;
 
+import util.hash.BCrypt;
+
+import java.sql.SQLException;
+
 public class AuthService {
+    
     private final UserDAO userDao = new UserDAO();
 
     public SysUser authenticate(String email, String password) {
@@ -23,9 +28,9 @@ public class AuthService {
 
     public boolean registerStaff(Staff staff, String password) {
         try {
-            if (userDao.emailExists(staff.getEmail())) return false;
+            if (userDao.emailExists(staff.getEmail())) return false; // Tránh trùng email
             staff.setPasswordHash(BCrypt.hashpw(password, BCrypt.gensalt()));
-            return userDao.saveStaff(staff); 
+            return userDao.saveStaff(staff);
         } catch (SQLException e) {
             e.printStackTrace();
             return false;

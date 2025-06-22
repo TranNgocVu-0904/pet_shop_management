@@ -15,21 +15,35 @@ public abstract class Product {
     }
 
     // Final setter to allow setting only once (from DAO after insert)
-    public final void setId(int id) {
+    public final void setId(int id) 
+    {
         if (this.id != 0) throw new IllegalStateException("ID already set");
+        
         if (id <= 0) throw new IllegalArgumentException("Invalid product ID");
+        
         this.id = id;
     }
 
     // Getters
-    public int getId() { return id; }
+    public int getId() {
+        return id;
+    }
 
-    public String getName() { return name; }
-    public BigDecimal getPrice() { return price; }
-    public int getStockQuantity() { return stockQuantity; }
+    public String getName() {
+        return name;
+    }
+
+    public BigDecimal getPrice() {
+        return price;
+    }
+
+    public int getStockQuantity() {
+        return stockQuantity;
+    }
 
     // Setters with validation
-    public void setName(String name) {
+    public void setName(String name)
+    {
         if (name == null || name.trim().isEmpty())
             throw new IllegalArgumentException("Product name is required");
         this.name = name.trim();
@@ -41,9 +55,22 @@ public abstract class Product {
         this.price = price;
     }
 
-    public void setStockQuantity(int stockQuantity) {
+    public void setStockQuantity(int stockQuantity)
+    {
         if (stockQuantity < 0)
             throw new IllegalArgumentException("Stock cannot be negative");
         this.stockQuantity = stockQuantity;
+    }
+
+    // Adjust stock quantity by delta (positive to add stock, negative to reduce)
+    public void adjustStock(int delta) 
+    {
+        int newStock = this.stockQuantity + delta;
+        
+        if (newStock < 0) 
+        {
+            throw new IllegalArgumentException("Stock cannot be negative");
+        }
+        this.stockQuantity = newStock;
     }
 }

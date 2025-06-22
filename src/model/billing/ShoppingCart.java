@@ -1,70 +1,77 @@
 package model.billing;
 
-import model.billing.BillItem;
 import model.product.Product;
 import model.pet.Pet;
+
 import java.math.BigDecimal;
+
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
+
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class ShoppingCart {
-    private final Map<Integer, BillItem> items = new HashMap<>();
+    private final Map<Integer, BillItem> productItems = new HashMap<>();
+    private final Map<Integer, BillItem> petItems = new HashMap<>();
 
-    public void addItem(Product product, int quantity) {
-        int key = product.getId(); // unique positive key for products
-        items.compute(key, (k, v) -> {
-            if (v == null) {
-                return new BillItem(
-                    product.getId(),
-                    product.getName(),
-                    product.getPrice(),
-                    quantity,
-                    product.getClass().getSimpleName().toUpperCase()
-                );
+    public void addProduct(Product product, int quantity) 
+    {
+        productItems.compute(product.getId(), (k, v) -> {
+            if (v == null) 
+            {
+                return new BillItem(product.getId(), product.getName(), product.getPrice(), quantity,
+                                    product.getClass().getSimpleName().toUpperCase());
             }
             v.setQuantity(v.getQuantity() + quantity);
             return v;
         });
     }
 
-    public void addItem(Pet pet) {
-        int key = pet.getId() * -1; // negative ID key for pets
-        if (!items.containsKey(key)) {
-            items.put(key, new BillItem(
-                pet.getId(),
-                pet.getName(),
-                pet.getPrice(),
-                pet.getClass().getSimpleName().toUpperCase()
-            ));
+    public void addPet(Pet pet) {
+        if (!petItems.containsKey(pet.getId())) {
+            petItems.put(pet.getId(), new BillItem(pet.getId(), pet.getName(), pet.getPrice(),
+                                                   pet.getClass().getSimpleName().toUpperCase()));
         }
     }
 
-    public void updateQuantity(int productId, int newQuantity) {
-        BillItem item = items.get(productId);
-        if (item != null && item.getItemType() == BillItem.ItemType.PRODUCT) {
+    public void updateProductQuantity(int productId, int newQuantity)
+    {
+        BillItem item = productItems.get(productId);
+        
+        if (item != null)
+        {
             item.setQuantity(newQuantity);
         }
     }
 
-    public void removeItem(int id) {
-        items.remove(id);
+    public void removeProduct(int productId)
+    {
+        productItems.remove(productId);
     }
 
-    public BigDecimal getTotal() {
-        return items.values().stream()
-            .map(BillItem::getTotal)
-            .reduce(BigDecimal.ZERO, BigDecimal::add);
+    public void removePet(int petId) 
+    {
+        petItems.remove(petId);
     }
 
-    public Map<Integer, BillItem> getItems() {
-        return new HashMap<>(items);
+    public BigDecimal getTotal() 
+    {
+        return Stream.concat(productItems.values().stream(), petItems.values().stream())
+                     .map(BillItem::getTotal)
+                     .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
-    public BillItem getItem(int productId) {
-        return items.get(productId);
+    public List<BillItem> getAllItems() 
+    {
+        return Stream.concat(productItems.values().stream(), petItems.values().stream())
+                     .collect(Collectors.toList());
     }
-    
-    public void clear() {
-        items.clear();
+
+    public void clear() 
+    {
+        productItems.clear();
+        petItems.clear();
     }
 }

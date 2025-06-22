@@ -6,7 +6,6 @@ import model.pet.Dog;
 import model.pet.Pet;
 import util.ui.ButtonCellEditor;
 import util.ui.ButtonCellRenderer;
-import util.ui.RowMapper;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -22,7 +21,11 @@ public class PetPanel extends JPanel {
     private JComboBox<String> categoryBox;
     private JComboBox<String> priceOrderBox;
 
+    private final PetController petController;  // thêm controller instance
+
     public PetPanel() {
+        petController = new PetController();  // tạo instance controller
+
         setLayout(new BorderLayout());
         setBackground(new Color(240, 236, 236));
         setBorder(BorderFactory.createEmptyBorder(20, 40, 20, 40));
@@ -57,6 +60,7 @@ public class PetPanel extends JPanel {
         // === Table Setup ===
         String[] columns = {"ID", "Name", "Type", "Breed", "Age", "Price", "Update", "Delete"};
         model = new DefaultTableModel(columns, 0) {
+            @Override
             public boolean isCellEditable(int row, int col) {
                 return col == 6 || col == 7;
             }
@@ -85,20 +89,27 @@ public class PetPanel extends JPanel {
                 null,
                 pet -> {
                     int confirm = JOptionPane.showConfirmDialog(this,
-                            "Delete pet ID " + pet.getId() + "?", "Confirm Delete",
+                            "Bạn có chắc chắn muốn xóa thú cưng ID " + pet.getId() + "?",
+                            "Xác nhận xóa",
                             JOptionPane.YES_NO_OPTION);
                     if (confirm == JOptionPane.YES_OPTION) {
-                        PetController.deletePet(pet.getId());
-                        refreshTable();
+                        boolean success = petController.deletePet(pet.getId());  // gọi controller
+                        if (success) {
+                            JOptionPane.showMessageDialog(this, "Xóa thú cưng thành công.");
+                            refreshTable();
+                        } else {
+                            JOptionPane.showMessageDialog(this, "Không thể xóa thú cưng (có thể do ràng buộc khóa ngoại).");
+                        }
                     }
                 }
         ));
+
 
         addBtn.addActionListener(e -> new PetFormDialog(this, null));
         searchBtn.addActionListener(e -> {
             try {
                 int id = Integer.parseInt(searchField.getText().trim());
-                Pet pet = PetController.getAllPets().stream()
+                Pet pet = petController.getAllPets().stream()  // gọi qua instance
                         .filter(p -> p.getId() == id)
                         .findFirst().orElse(null);
                 model.setRowCount(0);
@@ -120,8 +131,10 @@ public class PetPanel extends JPanel {
 
     private void loadAllPets() {
         model.setRowCount(0);
-        List<Pet> pets = PetController.getAllPets();
+        List<Pet> pets = petController.getAllPets();  // gọi qua instance
         pets.forEach(this::addPetToTable);
+
+        petTable.clearSelection();  // ✅ Bỏ chọn dòng đầu tiên
     }
 
     private void applyFilters() {
@@ -131,9 +144,11 @@ public class PetPanel extends JPanel {
         String priceOrder = priceOrderBox.getSelectedItem().toString();
         if (priceOrder.equals("None")) priceOrder = null;
 
-        List<Pet> filtered = PetController.getPetsByFilter(type, priceOrder);
+        List<Pet> filtered = petController.getPetsByFilter(type, priceOrder);  // gọi qua instance
         model.setRowCount(0);
         filtered.forEach(this::addPetToTable);
+
+        petTable.clearSelection();  // ✅ Bỏ chọn dòng đầu tiên
     }
 
     private void addPetToTable(Pet p) {
@@ -166,7 +181,6 @@ public class PetPanel extends JPanel {
         return pet;
     }
 
-    // Reuse styling methods
     private JButton createRoundedButton(String text) {
         JButton button = new JButton(text);
         button.setBackground(new Color(0x007BFF));
@@ -179,9 +193,11 @@ public class PetPanel extends JPanel {
         button.setContentAreaFilled(false);
         button.setOpaque(true);
         button.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
             public void mouseEntered(java.awt.event.MouseEvent evt) {
                 button.setBackground(new Color(0x0056B3));
             }
+            @Override
             public void mouseExited(java.awt.event.MouseEvent evt) {
                 button.setBackground(new Color(0x007BFF));
             }
@@ -201,12 +217,14 @@ public class PetPanel extends JPanel {
         ));
 
         field.addFocusListener(new java.awt.event.FocusAdapter() {
+            @Override
             public void focusGained(java.awt.event.FocusEvent e) {
                 if (field.getText().equals(placeholder)) {
                     field.setText("");
                     field.setForeground(Color.BLACK);
                 }
             }
+            @Override
             public void focusLost(java.awt.event.FocusEvent e) {
                 if (field.getText().isEmpty()) {
                     field.setText(placeholder);

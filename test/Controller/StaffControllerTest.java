@@ -1,12 +1,12 @@
 package Controller;
 
-import controller.AuthController;
+import controller.user.AuthController;
 import controller.StaffController;
-import dao.UserDAO;
-import model.Manager;
-import model.Staff;
+import dao.user.UserDAO;
+import model.user.Manager;
+import model.user.Staff;
 import org.junit.Test;
-import util.BCrypt;
+import util.hash.BCrypt;
 
 import java.math.BigDecimal;
 

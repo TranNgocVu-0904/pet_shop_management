@@ -10,8 +10,6 @@ import util.ui.ButtonCellEditor;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.math.BigDecimal;
-import java.util.List;
 import view.dialog.StaffFormDialog;
 
 public class StaffPanel extends JPanel {
@@ -46,10 +44,10 @@ public class StaffPanel extends JPanel {
         topPanel.add(searchPanel, BorderLayout.EAST);
 
         // === Table Setup ===
-//        String[] columns = {"ID", "Name", "Email", "Phone", "Username", "Salary", "Update", "Delete"};
-        String[] columns = {"ID", "Name", "Email", "Phone", "Username", "Salary", "Update"};
+        String[] columns = {"ID", "Name", "Email", "Phone", "Username", "Salary", "Update", "Delete"};
         model = new DefaultTableModel(columns, 0) {
-            public boolean isCellEditable(int row, int col) {
+            @Override
+           public boolean isCellEditable(int row, int col) {
                 return col == 6 || col == 7;
             }
         };
@@ -59,41 +57,81 @@ public class StaffPanel extends JPanel {
         JScrollPane scrollPane = new JScrollPane(staffTable);
         scrollPane.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
 
+        // Set Update button renderer and editor
         staffTable.getColumn("Update").setCellRenderer(new ButtonCellRenderer("✏️"));
-//        staffTable.getColumn("Delete").setCellRenderer(new ButtonCellRenderer("🗑️"));
-
         staffTable.getColumn("Update").setCellEditor(new ButtonCellEditor<>(
-                staffTable,
-                "update",
-                this::mapRowToStaff,
-                staff -> {
-                    if (AuthController.currentUser instanceof Manager) {
-                        new StaffFormDialog(this, staff);
-                    } else {
-                        JOptionPane.showMessageDialog(this, "Only managers can edit staff.");
+            staffTable,
+            "update",
+            (tableModel, row) -> {
+                try {
+                    int id = Integer.parseInt(tableModel.getValueAt(row, 0).toString());
+                    Staff staff = controller.getAllStaff().stream()
+                            .filter(s -> s.getId() == id)
+                            .findFirst()
+                            .orElse(null);
+                    if (staff == null) {
+                        JOptionPane.showMessageDialog(this, "Không tìm thấy nhân viên có ID " + id);
                     }
-                },
-                null
+                    return staff;
+                } catch (NumberFormatException e) {
+                    JOptionPane.showMessageDialog(this, "ID không hợp lệ.");
+                    return null;
+                }
+            },
+            staff -> new StaffFormDialog(this, staff),
+            null
         ));
 
-//        staffTable.getColumn("Delete").setCellEditor(new ButtonCellEditor<>(
-//                staffTable,
-//                "delete",
-//                this::mapRowToStaff,
-//                null,
-//                staff -> {
-//                    if (!(AuthController.currentUser instanceof Manager)) {
-//                        JOptionPane.showMessageDialog(this, "Only managers can delete staff.");
-//                        return;
-//                    }
-//                    int confirm = JOptionPane.showConfirmDialog(this,
-//                            "Delete staff ID " + staff.getId() + "?", "Confirm Delete", JOptionPane.YES_NO_OPTION);
-//                    if (confirm == JOptionPane.YES_OPTION) {
-//                        controller.deleteStaff(staff.getId());
-//                        refreshTable();
-//                    }
-//                }
-//        ));
+        // Set Delete button renderer and editor
+        staffTable.getColumn("Delete").setCellRenderer(new ButtonCellRenderer("🗑️"));
+        staffTable.getColumn("Delete").setCellEditor(new ButtonCellEditor<>(
+            staffTable,
+            "delete",
+            (tableModel, row) -> {
+                try {
+                    int id = Integer.parseInt(tableModel.getValueAt(row, 0).toString());
+                    Staff staff = controller.getAllStaff().stream()
+                            .filter(s -> s.getId() == id)
+                            .findFirst()
+                            .orElse(null);
+                    if (staff == null) {
+                        JOptionPane.showMessageDialog(this, "Không tìm thấy nhân viên có ID " + id);
+                    }
+                    return staff;
+                } catch (NumberFormatException e) {
+                    JOptionPane.showMessageDialog(this, "ID không hợp lệ.");
+                    return null;
+                }
+            },
+            null,
+            staff -> {
+                if (staff == null) return;
+
+                if (!(AuthController.currentUser instanceof Manager)) {
+                    JOptionPane.showMessageDialog(this, "Chỉ quản lý mới có quyền xóa nhân viên.");
+                    return;
+                }
+
+                int confirm = JOptionPane.showConfirmDialog(this,
+                        "Bạn có chắc chắn muốn xóa nhân viên ID " + staff.getId() + "?",
+                        "Xác nhận xóa",
+                        JOptionPane.YES_NO_OPTION);
+                if (confirm == JOptionPane.YES_OPTION) {
+                    try {
+                        boolean success = controller.deleteStaff(staff.getId());
+                        if (success) {
+                            JOptionPane.showMessageDialog(this, "Xóa nhân viên thành công.");
+                            refreshTable();
+                        } else {
+                            JOptionPane.showMessageDialog(this, "Không thể xóa nhân viên (có thể do ràng buộc khóa ngoại).");
+                        }
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                        JOptionPane.showMessageDialog(this, "Lỗi khi xóa nhân viên.");
+                    }
+                }
+            }
+        ));
 
         addBtn.addActionListener(e -> new StaffFormDialog(this, null));
 
@@ -121,21 +159,10 @@ public class StaffPanel extends JPanel {
     private void loadStaff() {
         model.setRowCount(0);
         controller.getAllStaff().forEach(this::addStaffToTable);
-    }
 
-//    private void addStaffToTable(Staff s) {
-//        model.addRow(new Object[]{
-//                s.getId(),
-//                s.getName(),
-//                s.getEmail(),
-//                s.getPhone(),
-//                s.getUsername(),
-//                s.getSalary(),
-//                "✏️",
-//                "🗑️"
-//        });
-//    }
-    
+        // Bỏ chọn tất cả hàng trong bảng
+        staffTable.clearSelection();
+}
     private void addStaffToTable(Staff s) {
         model.addRow(new Object[]{
                 s.getId(),
@@ -144,16 +171,9 @@ public class StaffPanel extends JPanel {
                 s.getPhone(),
                 s.getUsername(),
                 s.getSalary(),
-                "✏️"
+                "✏️",
+                "🗑️"
         });
-    }
-
-    private Staff mapRowToStaff(DefaultTableModel model, int row) {
-        int id = Integer.parseInt(model.getValueAt(row, 0).toString());
-        return controller.getAllStaff().stream()
-                .filter(s -> s.getId() == id)
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Staff not found."));
     }
 
     private JButton createRoundedButton(String text) {
@@ -168,9 +188,12 @@ public class StaffPanel extends JPanel {
         button.setContentAreaFilled(false);
         button.setOpaque(true);
         button.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
             public void mouseEntered(java.awt.event.MouseEvent evt) {
                 button.setBackground(new Color(0x0056B3));
             }
+
+            @Override
             public void mouseExited(java.awt.event.MouseEvent evt) {
                 button.setBackground(new Color(0x007BFF));
             }
@@ -190,6 +213,7 @@ public class StaffPanel extends JPanel {
         ));
 
         field.addFocusListener(new java.awt.event.FocusAdapter() {
+            @Override
             public void focusGained(java.awt.event.FocusEvent e) {
                 if (field.getText().equals(placeholder)) {
                     field.setText("");
@@ -197,6 +221,7 @@ public class StaffPanel extends JPanel {
                 }
             }
 
+            @Override
             public void focusLost(java.awt.event.FocusEvent e) {
                 if (field.getText().isEmpty()) {
                     field.setForeground(Color.GRAY);

@@ -1,15 +1,17 @@
 package model.pet;
 
-import model.pet.Pet;
 import java.math.BigDecimal;
 
-public class Dog extends Pet {
-    public Dog(String name, String breed, int age, BigDecimal price) {
+public class Dog extends Pet 
+{
+    public Dog(String name, String breed, int age, BigDecimal price) 
+    {
         super(name, breed, age, price);
     }
-
+    
     @Override
-    public String getDisplayName() {
+    public String getDisplayName() 
+    {
         return "Dog - " + getName() + " (" + getBreed() + ")";
     }
 }

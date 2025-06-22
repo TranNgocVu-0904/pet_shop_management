@@ -2,7 +2,6 @@ package view.panel;
 
 import controller.product.ProductController;
 import controller.pet.PetController;
-import controller.customer.CustomerController;
 import controller.bill.BillingController;
 
 import javax.swing.*;
@@ -11,17 +10,24 @@ import java.math.BigDecimal;
 
 public class HomePanel extends JPanel {
 
-    public HomePanel() {
+    public HomePanel()
+    {
         setLayout(new GridLayout(2, 2, 50, 50));
+        
         setBackground(new Color(240, 236, 236));
+        
         setBorder(BorderFactory.createEmptyBorder(90, 90, 90, 90));
 
         // Controllers (for proper non-static access)
         BillingController billing = new BillingController();
 
         // === Fetch data ===
-        int totalProducts = ProductController.getAllProducts().size();
-        int totalPets = PetController.getAllPets().size();
+        ProductController productController = new ProductController();
+        PetController petController = new PetController();
+
+        int totalProducts = productController.getAllProducts().size();
+        int totalPets = petController.getAllPets().size();
+        
         int totalOrders = billing.getTotalOrders();          // You already fixed this
         BigDecimal totalRevenue = billing.getTotalRevenue();     // Also fixed
 

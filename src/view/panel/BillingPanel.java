@@ -47,6 +47,7 @@ public class BillingPanel extends JPanel {
         // === Table ===
         String[] columns = {"ID", "Label", "Type", "Name", "Quantity", "Price", "Update", "Delete"};
         tableModel = new DefaultTableModel(columns, 0) {
+            @Override
             public boolean isCellEditable(int row, int col) {
                 return col == 6 || col == 7;
             }
@@ -224,9 +225,11 @@ public class BillingPanel extends JPanel {
         button.setContentAreaFilled(false);
         button.setOpaque(true);
         button.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
             public void mouseEntered(java.awt.event.MouseEvent evt) {
                 button.setBackground(new Color(0x0056B3));
             }
+            @Override
             public void mouseExited(java.awt.event.MouseEvent evt) {
                 button.setBackground(new Color(0x007BFF));
             }

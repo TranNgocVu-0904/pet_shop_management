@@ -4,6 +4,8 @@ import view.panel.CustomerPanel;
 import controller.customer.CustomerController;
 import model.user.Customer;
 
+import service.human.CustomerService;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -15,6 +17,7 @@ public class CustomerFormDialog extends JDialog {
 
     private final CustomerPanel parent;
     private final Customer existingCustomer;
+    private final CustomerService customerService = new CustomerService();
 
     public CustomerFormDialog(CustomerPanel parent, Customer customer) {
         super((Frame) SwingUtilities.getWindowAncestor(parent), true);
@@ -66,7 +69,7 @@ public class CustomerFormDialog extends JDialog {
         setLocationRelativeTo(parent);
         setVisible(true);
     }
-
+    
     private void saveCustomer() {
         try {
             String name = nameField.getText().trim();
@@ -74,29 +77,31 @@ public class CustomerFormDialog extends JDialog {
             String phone = phoneField.getText().trim();
             int loyalty = Integer.parseInt(loyaltyField.getText().trim());
 
-            if (loyalty < 0) {
-                JOptionPane.showMessageDialog(this, "Loyalty points cannot be negative.");
-                return;
-            }
+            // Validate dữ liệu
+            customerService.validateCustomerData(name, email, phone, loyalty);
 
+            // Gọi controller để xử lý thêm hoặc cập nhật
             if (existingCustomer != null) {
                 existingCustomer.setName(name);
                 existingCustomer.setEmail(email);
                 existingCustomer.setPhone(phone);
-                existingCustomer.setLoyaltyPoints(loyalty); 
+                existingCustomer.setLoyaltyPoints(loyalty);
                 CustomerController.updateCustomer(existingCustomer);
             } else {
                 Customer c = new Customer(name, email, phone);
-                c.setLoyaltyPoints(loyalty); 
+                c.setLoyaltyPoints(loyalty);
                 CustomerController.addCustomer(c);
             }
 
             parent.refreshTable();
             dispose();
+
         } catch (NumberFormatException nfe) {
             JOptionPane.showMessageDialog(this, "Loyalty points must be a valid number.");
+        } catch (IllegalArgumentException iae) {
+            JOptionPane.showMessageDialog(this, "Error: " + iae.getMessage());
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage());
+            JOptionPane.showMessageDialog(this, "Unexpected error: " + ex.getMessage());
         }
     }
 }

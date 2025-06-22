@@ -1,9 +1,9 @@
 package DAO;
 
-import dao.UserDAO;
-import model.Staff;
+import dao.user.UserDAO;
+import model.user.Staff;
 import org.junit.Test;
-import util.BCrypt;
+import util.hash.BCrypt;
 
 import java.math.BigDecimal;
 

@@ -1,16 +1,19 @@
 package view.dialog;
 
 import view.panel.ProductPanel;
+
 import model.product.Food;
 import model.product.Toy;
 import model.product.Medicine;
 import model.product.Product;
+
 import controller.product.ProductController;
+
+import service.product.ProductService;
 
 import javax.swing.*;
 import java.awt.*;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 
 public class ProductFormDialog extends JDialog {
     private final JTextField nameField = new JTextField();
@@ -27,6 +30,9 @@ public class ProductFormDialog extends JDialog {
 
     private final ProductPanel parent;
     private final Product existing;
+
+    private final ProductController productController = new ProductController();
+    private final ProductService productService = new ProductService();
 
     public ProductFormDialog(ProductPanel parent, Product product) {
         super((Frame) null, true);
@@ -49,11 +55,18 @@ public class ProductFormDialog extends JDialog {
         add(new JLabel("Manufacture Date (YYYY-MM-DD):")); add(manufactureField);
         add(new JLabel("Dosage:")); add(dosageField);
 
+        // Nút Save và Cancel
         JButton saveBtn = new JButton("Save");
-        add(new JLabel());
-        add(saveBtn);
+        JButton cancelBtn = new JButton("Cancel");
 
-        // Pre-fill data
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        buttonPanel.add(saveBtn);
+        buttonPanel.add(cancelBtn);
+
+        add(new JLabel());  // Ô trống giữ layout
+        add(buttonPanel);
+
+        // Nếu đang sửa thì fill dữ liệu vào form
         if (product != null) {
             nameField.setText(product.getName());
             priceField.setText(product.getPrice().toPlainString());
@@ -72,47 +85,72 @@ public class ProductFormDialog extends JDialog {
             }
         }
 
+        // Bật tắt các trường theo category
         categoryBox.addActionListener(e -> toggleFields());
 
         saveBtn.addActionListener(e -> {
             try {
                 String name = nameField.getText().trim();
-                BigDecimal price = new BigDecimal(priceField.getText().trim());
-                int quantity = Integer.parseInt(quantityField.getText().trim());
-                String type = categoryBox.getSelectedItem().toString();
+                String priceStr = priceField.getText().trim();
+                String quantityStr = quantityField.getText().trim();
+                String type = categoryBox.getSelectedItem().toString().toUpperCase();
 
-                Product productToSave = switch (type) {
-                    case "TOY" -> new Toy(name, price, quantity, materialField.getText().trim());
-                    case "FOOD" -> new Food(name, price, quantity,
-                            LocalDate.parse(expirationField.getText().trim()),
-                            nutritionalField.getText().trim());
-                    case "MEDICINE" -> new Medicine(name, price, quantity,
-                            dosageField.getText().trim(),
-                            LocalDate.parse(manufactureField.getText().trim()),
-                            LocalDate.parse(expirationField.getText().trim()));
+                if (name.isEmpty() || priceStr.isEmpty() || quantityStr.isEmpty()) {
+                    throw new IllegalArgumentException("Name, Price and Quantity cannot be empty");
+                }
+
+                BigDecimal price = new BigDecimal(priceStr);
+                int quantity = Integer.parseInt(quantityStr);
+
+                Product productToSave;
+                switch(type) {
+                    case "TOY" -> productToSave = productService.createToy(name, price, quantity, materialField.getText().trim());
+                    case "FOOD" -> productToSave = productService.createFood(name, price, quantity, expirationField.getText().trim(), nutritionalField.getText().trim());
+                    case "MEDICINE" -> productToSave = productService.createMedicine(name, price, quantity, dosageField.getText().trim(), manufactureField.getText().trim(), expirationField.getText().trim());
                     default -> throw new IllegalArgumentException("Unknown product type");
-                };
+                }
 
-                if (existing != null) productToSave.setId(existing.getId());
+                if (existing != null) {
+                    productToSave.setId(existing.getId());
+                }
 
+                boolean success;
                 if (existing == null) {
-                    ProductController.addProduct(productToSave);
+                    success = productController.addProduct(productToSave);
                 } else {
-                    ProductController.updateProduct(productToSave);
+                    success = productController.updateProduct(productToSave);
+                }
+
+                if (!success) {
+                    JOptionPane.showMessageDialog(this, "Operation failed, please try again.", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
                 }
 
                 parent.refreshTable();
                 dispose();
 
+            } catch (NumberFormatException nfe) {
+                JOptionPane.showMessageDialog(this,
+                        "Price and Quantity must be numeric.",
+                        "Input Error",
+                        JOptionPane.ERROR_MESSAGE);
+            } catch (IllegalArgumentException iae) {
+                JOptionPane.showMessageDialog(this,
+                        iae.getMessage(),
+                        "Input Error",
+                        JOptionPane.ERROR_MESSAGE);
             } catch (Exception ex) {
                 ex.printStackTrace();
                 JOptionPane.showMessageDialog(this,
-                        "Error: " + ex.getMessage(), "Input Error", JOptionPane.ERROR_MESSAGE);
+                        "Unexpected error: " + ex.getMessage(),
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE);
             }
         });
 
-        toggleFields(); // Initialize correct visibility
-        setVisible(true);
+        cancelBtn.addActionListener(e -> dispose());
+
+        toggleFields(); // Khởi tạo trạng thái enable/disable các trường theo category
     }
 
     private void toggleFields() {

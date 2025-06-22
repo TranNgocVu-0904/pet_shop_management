@@ -1,7 +1,7 @@
 package DAO;
 
-import model.Customer;
-import dao.CustomerDAO;
+import model.user.Customer;
+import dao.customer.CustomerDAO;
 import org.junit.Test;
 
 import static org.junit.Assert.*;

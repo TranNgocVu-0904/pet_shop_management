@@ -116,7 +116,7 @@ public class SignupFrame extends JFrame {
             public void focusGained(FocusEvent e) {
                 if (field.getText().equals(placeholder)) {
                     field.setText("");
-                    field.setForeground(Color.WHITE);
+                    field.setForeground(Color.BLACK);
                 }
             }
 

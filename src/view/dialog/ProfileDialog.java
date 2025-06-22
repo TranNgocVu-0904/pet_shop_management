@@ -5,11 +5,14 @@ import controller.user.UserController;
 import model.user.Manager;
 import model.user.Staff;
 import model.user.SysUser;
+
+import service.users.UserService;
+
 import util.hash.BCrypt;
 
 import javax.swing.*;
 import java.awt.*;
-import java.math.BigDecimal;
+
 
 public class ProfileDialog extends JDialog {
     private final JTextField nameField = new JTextField(20);
@@ -66,44 +69,26 @@ public class ProfileDialog extends JDialog {
         phoneField.setText(user.getPhone());
         usernameField.setText(user.getUsername());
     }
+private void handleUpdate() {
+    SysUser currentUser = AuthController.currentUser;
 
-    private void handleUpdate() {
-        SysUser user = AuthController.currentUser;
+    if (currentUser == null) return;
 
-        if (user == null) return;
+    String name = nameField.getText().trim();
+    String email = emailField.getText().trim();
+    String phone = phoneField.getText().trim();
+    String username = usernameField.getText().trim();
+    String newPassword = new String(passwordField.getPassword()).trim();
 
-        String name = nameField.getText().trim();
-        String email = emailField.getText().trim();
-        String phone = phoneField.getText().trim();
-        String username = usernameField.getText().trim();
-        String newPassword = new String(passwordField.getPassword()).trim();
+    try {
+        UserService service = new UserService();
 
-        if (name.isEmpty() || email.isEmpty() || phone.isEmpty() || username.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "All fields (except password) are required");
-            return;
-        }
+        // gọi business logic để tạo bản cập nhật user mới
+        SysUser updatedUser = service.updateProfile(currentUser, name, email, phone, username, newPassword);
 
-        // Update object
-        SysUser updatedUser;
-        if (user instanceof Staff staff) {
-            updatedUser = new Staff(name, email, phone, username, staff.getPasswordHash(), staff.getSalary());
-        } else if (user instanceof Manager manager) {
-            updatedUser = new Manager(name, email, phone, username, manager.getPasswordHash());
-        } else {
-            JOptionPane.showMessageDialog(this, "Unsupported user type");
-            return;
-        }
-
-        updatedUser.setId(user.getId());
-
-        // Update password if provided
-        if (!newPassword.isBlank()) {
-            String hashed = BCrypt.hashpw(newPassword, BCrypt.gensalt());
-            updatedUser.setPasswordHash(hashed);
-        }
-
+        // update xuống DB
         UserController controller = new UserController();
-        boolean success = controller.updateUser(updatedUser); // safe cast even for Manager
+        boolean success = controller.updateUser(updatedUser);
 
         if (success) {
             AuthController.currentUser = updatedUser;
@@ -112,5 +97,12 @@ public class ProfileDialog extends JDialog {
         } else {
             JOptionPane.showMessageDialog(this, "Update failed.");
         }
+
+    } catch (IllegalArgumentException ex) {
+        JOptionPane.showMessageDialog(this, ex.getMessage());
+    } catch (Exception ex) {
+        JOptionPane.showMessageDialog(this, "Unexpected error: " + ex.getMessage());
     }
+}
+
 }

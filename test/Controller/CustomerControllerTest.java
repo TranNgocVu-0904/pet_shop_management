@@ -1,7 +1,7 @@
 package Controller;
 
-import controller.CustomerController;
-import model.Customer;
+import controller.customer.CustomerController;
+import model.user.Customer;
 import org.junit.Test;
 
 import java.util.List;

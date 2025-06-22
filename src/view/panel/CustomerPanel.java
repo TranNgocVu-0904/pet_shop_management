@@ -8,7 +8,7 @@ import model.user.Customer;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.util.List;
+import java.util.Optional;
 import view.dialog.CustomerFormDialog;
 
 public class CustomerPanel extends JPanel {
@@ -49,10 +49,9 @@ public class CustomerPanel extends JPanel {
         topPanel.add(filterPanel, BorderLayout.EAST);
 
         // === Table Setup
-        // Disable delete functionality because FK constrain in bill (maybe implement soft-delete in near future
-//        String[] columns = {"ID", "Name", "Email", "Phone", "Loyalty", "✏️", "🗑️"};
-        String[] columns = {"ID", "Name", "Email", "Phone", "Loyalty", "✏️"};
+        String[] columns = {"ID", "Name", "Email", "Phone", "Loyalty", "✏️", "🗑️"};
         model = new DefaultTableModel(columns, 0) {
+            @Override
             public boolean isCellEditable(int row, int col) {
                 return col >= 5;
             }
@@ -62,42 +61,59 @@ public class CustomerPanel extends JPanel {
         customerTable.setRowHeight(30);
 
         customerTable.getColumn("✏️").setCellRenderer(new ButtonCellRenderer("✏️"));
-        // Disable delete functionality because FK constrain in bill (maybe implement soft-delete in near future
-//        customerTable.getColumn("🗑️").setCellRenderer(new ButtonCellRenderer("🗑️"));
+        customerTable.getColumn("🗑️").setCellRenderer(new ButtonCellRenderer("🗑️"));
 
-        customerTable.getColumn("✏️").setCellEditor(new ButtonCellEditor<>(
-                customerTable,
-                "update",
-                (model, row) -> {
-                    int id = Integer.parseInt(model.getValueAt(row, 0).toString());
-                    return CustomerController.getCustomerById(id);
-                },
-                customer -> new CustomerFormDialog(this, customer),
-                null
-        ));
+customerTable.getColumn("✏️").setCellEditor(new ButtonCellEditor<>(
+    customerTable,
+    "update",
+    (model, row) -> {
+        int id = Integer.parseInt(model.getValueAt(row, 0).toString());
+        return CustomerController.getCustomerById(id); // trả về Optional<Customer>
+    },
+    customerOpt -> {
+        if (customerOpt.isPresent()) 
+        {
+            CustomerFormDialog customerFormDialog = new CustomerFormDialog(this, customerOpt.get());
+        } 
+        else 
+        {
+            JOptionPane.showMessageDialog(this, "Không tìm thấy khách hàng.");
+        }
+    },
+    null
+));
 
-        // Disable delete functionality because FK constrain in bill (maybe implement soft-delete in near future
-//        customerTable.getColumn("🗑️").setCellEditor(new ButtonCellEditor<>(
-//                customerTable,
-//                "delete",
-//                (model, row) -> {
-//                    int id = Integer.parseInt(model.getValueAt(row, 0).toString());
-//                    return CustomerController.getCustomerById(id);
-//                },
-//                null,
-//                customer -> {
-//                    int confirm = JOptionPane.showConfirmDialog(this, "Delete customer ID " + customer.getId() + "?", "Confirm", JOptionPane.YES_NO_OPTION);
-//                    if (confirm == JOptionPane.YES_OPTION) {
-//                        boolean success = CustomerController.deleteCustomer(customer.getId());
-//                        if (success) {
-//                            JOptionPane.showMessageDialog(this, "Customer deleted.");
-//                            refreshTable();
-//                        } else {
-//                            JOptionPane.showMessageDialog(this, "Failed to delete customer.");
-//                        }
-//                    }
-//                }
-//        ));
+
+customerTable.getColumn("🗑️").setCellEditor(new ButtonCellEditor<>(
+    customerTable,
+    "delete",
+    (model, row) -> {
+        int id = Integer.parseInt(model.getValueAt(row, 0).toString());
+        return CustomerController.getCustomerById(id);  // trả về Optional<Customer>
+    },
+    null,
+    optionalCustomer -> {
+        if (optionalCustomer.isPresent()) {
+            Customer customer = optionalCustomer.get();
+            int confirm = JOptionPane.showConfirmDialog(this,
+                "Bạn có chắc chắn muốn xóa khách hàng ID " + customer.getId() + "?",
+                "Xác nhận xóa",
+                JOptionPane.YES_NO_OPTION);
+            if (confirm == JOptionPane.YES_OPTION) {
+                boolean success = CustomerController.deleteCustomer(customer.getId());
+                if (success) {
+                    JOptionPane.showMessageDialog(this, "Xóa khách hàng thành công.");
+                    refreshTable();
+                } else {
+                    JOptionPane.showMessageDialog(this, "Không thể xóa khách hàng (có thể do ràng buộc khóa ngoại).");
+                }
+            }
+        } else {
+            JOptionPane.showMessageDialog(this, "Không tìm thấy khách hàng để xóa.");
+        }
+    }
+));
+
 
         JScrollPane scrollPane = new JScrollPane(customerTable);
         scrollPane.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
@@ -108,12 +124,13 @@ public class CustomerPanel extends JPanel {
         searchBtn.addActionListener(e -> {
             try {
                 int id = Integer.parseInt(searchField.getText().trim());
-                Customer c = CustomerController.getCustomerById(id);
+                Optional<Customer> c = CustomerController.getCustomerById(id);
                 model.setRowCount(0);
-                if (c != null) addCustomerToTable(c);
-                else JOptionPane.showMessageDialog(this, "No customer found.");
+                if (c.isPresent()) addCustomerToTable(c.get());
+else JOptionPane.showMessageDialog(this, "Không tìm thấy khách hàng.");
+
             } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(this, "Invalid ID.");
+                JOptionPane.showMessageDialog(this, "ID không hợp lệ.");
             }
         });
 
@@ -140,16 +157,9 @@ public class CustomerPanel extends JPanel {
         CustomerController.getCustomersByLoyalty(order).forEach(this::addCustomerToTable);
     }
 
-    // Disable delete functionality because FK constrain in bill (maybe implement soft-delete in near future
-//    private void addCustomerToTable(Customer c) {
-//        model.addRow(new Object[]{
-//                c.getId(), c.getName(), c.getEmail(), c.getPhone(), c.getLoyaltyPoints(), "✏️", "🗑️"
-//        });
-//    }
-    
     private void addCustomerToTable(Customer c) {
         model.addRow(new Object[]{
-                c.getId(), c.getName(), c.getEmail(), c.getPhone(), c.getLoyaltyPoints(), "✏️"
+                c.getId(), c.getName(), c.getEmail(), c.getPhone(), c.getLoyaltyPoints(), "✏️", "🗑️"
         });
     }
 
@@ -165,10 +175,12 @@ public class CustomerPanel extends JPanel {
         button.setContentAreaFilled(false);
         button.setOpaque(true);
         button.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
             public void mouseEntered(java.awt.event.MouseEvent evt) {
                 button.setBackground(new Color(0x0056B3));
             }
 
+            @Override
             public void mouseExited(java.awt.event.MouseEvent evt) {
                 button.setBackground(new Color(0x007BFF));
             }
@@ -188,6 +200,7 @@ public class CustomerPanel extends JPanel {
         ));
 
         field.addFocusListener(new java.awt.event.FocusAdapter() {
+            @Override
             public void focusGained(java.awt.event.FocusEvent e) {
                 if (field.getText().equals(placeholder)) {
                     field.setText("");
@@ -195,6 +208,7 @@ public class CustomerPanel extends JPanel {
                 }
             }
 
+            @Override
             public void focusLost(java.awt.event.FocusEvent e) {
                 if (field.getText().isEmpty()) {
                     field.setText(placeholder);

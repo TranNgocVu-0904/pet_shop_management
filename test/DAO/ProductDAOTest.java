@@ -1,8 +1,8 @@
 package DAO;
 
-import dao.ProductDAO;
-import model.Food;
-import model.Product;
+import dao.product.ProductDAO;
+import model.product.Food;
+import model.product.Product;
 import org.junit.Test;
 
 import java.math.BigDecimal;

@@ -1,9 +1,9 @@
 package Service;
 
-import model.Staff;
-import model.SysUser;
+import model.user.Staff;
+import model.user.SysUser;
 import org.junit.Test;
-import service.AuthService;
+import service.auth.AuthService;
 import java.math.BigDecimal;
 import static org.junit.Assert.*;
 

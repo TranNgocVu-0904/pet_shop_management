@@ -94,4 +94,3 @@ CREATE TABLE `bill_items` (
 	CONSTRAINT `bill_items_ibfk_2` FOREIGN KEY (`pet_id`) REFERENCES `pets` (`id`),
 	CONSTRAINT `bill_items_ibfk_3` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-

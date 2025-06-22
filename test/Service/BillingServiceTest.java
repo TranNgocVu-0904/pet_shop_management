@@ -1,14 +1,14 @@
 package Service;
 
-import model.BillItem;
-import model.BillItem.ItemType;
+import model.billing.BillItem;
 import org.junit.Test;
-import service.BillingService;
+import service.billing.BillingService;
 
 import java.math.BigDecimal;
 import java.util.List;
 
 import static org.junit.Assert.*;
+
 
 public class BillingServiceTest {
 

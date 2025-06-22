@@ -9,6 +9,7 @@ import model.user.Staff;
 import javax.swing.*;
 import java.awt.*;
 import java.math.BigDecimal;
+import service.human.StaffService;
 import util.hash.BCrypt;
 
 public class StaffFormDialog extends JDialog {
@@ -82,61 +83,62 @@ public class StaffFormDialog extends JDialog {
         setVisible(true);
     }
 
-    private void saveStaff() {
-        try {
-            String name = nameField.getText().trim();
-            String email = emailField.getText().trim();
-            String phone = phoneField.getText().trim();
+private void saveStaff() {
+    try {
+        String name = nameField.getText().trim();
+        String email = emailField.getText().trim();
+        String phone = phoneField.getText().trim();
 
-            UserController controller = new UserController();
+        if (name.isEmpty() || email.isEmpty() || phone.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Please fill in all required fields.");
+            return;
+        }
 
-            if (existingStaff != null) {
-                existingStaff.setName(name);
-                existingStaff.setEmail(email);
-                existingStaff.setPhone(phone);
+        StaffService service = new StaffService();
+        UserController controller = new UserController();
 
-                if (isManager) {
-                    String username = usernameField.getText().trim();
-                    String password = new String(passwordField.getPassword()).trim();
-                    BigDecimal salary = new BigDecimal(salaryField.getText().trim());
-
-                    existingStaff.setUsername(username);
-                    if (!password.equals("********")) {
-                        String hashed = BCrypt.hashpw(password, BCrypt.gensalt());
-                        existingStaff.setPasswordHash(hashed);
-                    }
-                }
-
-                if (!controller.updateStaff(existingStaff)) {
-                    JOptionPane.showMessageDialog(this, "Update failed.");
-                }
-            } else {
-                if (!isManager) {
-                    JOptionPane.showMessageDialog(this, "Only managers can add staff.");
-                    return;
-                }
-
+        if (existingStaff != null) {
+            if (isManager) {
                 String username = usernameField.getText().trim();
                 String password = new String(passwordField.getPassword()).trim();
                 BigDecimal salary = new BigDecimal(salaryField.getText().trim());
 
-                if (username.isBlank() || password.isBlank()) {
-                    JOptionPane.showMessageDialog(this, "Username and password are required.");
-                    return;
-                }
-
-                String hashed = BCrypt.hashpw(password, BCrypt.gensalt());
-                Staff newStaff = new Staff(name, email, phone, username, hashed, salary);
-                if (!controller.addStaff(newStaff)) {
-                    JOptionPane.showMessageDialog(this, "Add failed.");
-                }
+                service.updateStaff(existingStaff, name, email, phone, username, password, salary);
+            } else {
+                existingStaff.setName(name);
+                existingStaff.setEmail(email);
+                existingStaff.setPhone(phone);
             }
 
-            parent.refreshTable();
-            dispose();
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage());
+            if (!controller.updateStaff(existingStaff)) {
+                JOptionPane.showMessageDialog(this, "Update failed.");
+                return;
+            }
+
+        } else {
+            if (!isManager) {
+                JOptionPane.showMessageDialog(this, "Only managers can add staff.");
+                return;
+            }
+
+            String username = usernameField.getText().trim();
+            String password = new String(passwordField.getPassword()).trim();
+            BigDecimal salary = new BigDecimal(salaryField.getText().trim());
+
+            Staff newStaff = service.createStaff(name, email, phone, username, password, salary);
+
+            if (!controller.addStaff(newStaff)) {
+                JOptionPane.showMessageDialog(this, "Add failed.");
+                return;
+            }
         }
+
+        parent.refreshTable();
+        dispose();
+    } catch (Exception ex) {
+        ex.printStackTrace();
+        JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage());
     }
+}
+
 }

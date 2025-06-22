@@ -5,11 +5,18 @@ import model.user.Customer;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Optional;
 
 public class CustomerController {
     private static final CustomerDAO customerDao = new CustomerDAO();
 
+    // Thêm khách hàng với validate đơn giản
     public static boolean addCustomer(Customer customer) {
+        if (customer == null || customer.getName() == null || customer.getName().isBlank()
+                || customer.getEmail() == null || customer.getEmail().isBlank()) {
+            System.err.println("[ERROR] Invalid customer data");
+            return false;
+        }
         try {
             customerDao.saveCustomer(customer);
             return true;
@@ -19,6 +26,7 @@ public class CustomerController {
         }
     }
 
+    // Lấy tất cả khách hàng
     public static List<Customer> getAllCustomers() {
         try {
             return customerDao.getAllCustomers();
@@ -28,15 +36,17 @@ public class CustomerController {
         }
     }
 
-    public static Customer getCustomerById(int id) {
+    // Lấy khách hàng theo ID trả về Optional
+    public static Optional<Customer> getCustomerById(int id) {
         try {
             return customerDao.getCustomerById(id);
         } catch (SQLException e) {
             e.printStackTrace();
-            return null;
+            return Optional.empty();
         }
     }
 
+    // Lấy danh sách khách hàng sắp xếp theo điểm loyalty (ASC hoặc DESC)
     public static List<Customer> getCustomersByLoyalty(String order) {
         try {
             return customerDao.getByLoyaltyPoints(order);
@@ -45,8 +55,13 @@ public class CustomerController {
             return List.of();
         }
     }
-    
+
+    // Cập nhật khách hàng với validate ID
     public static boolean updateCustomer(Customer customer) {
+        if (customer == null || customer.getId() <= 0) {
+            System.err.println("[ERROR] Invalid customer for update");
+            return false;
+        }
         try {
             return customerDao.updateCustomer(customer);
         } catch (SQLException e) {
@@ -55,10 +70,15 @@ public class CustomerController {
         }
     }
 
+    // Xóa khách hàng theo ID
     public static boolean deleteCustomer(int customerId) {
+        if (customerId <= 0) {
+            System.err.println("[ERROR] Invalid customer ID for deletion");
+            return false;
+        }
         try {
             return customerDao.deleteCustomer(customerId);
-        } catch (Exception e) {
+        } catch (SQLException e) {
             e.printStackTrace();
             return false;
         }

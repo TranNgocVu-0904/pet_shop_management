@@ -1,10 +1,10 @@
 package Controller;
 
-import model.Cat;
-import model.Pet;
+import model.pet.Cat;
+import model.pet.Pet;
 import org.junit.Before;
 import org.junit.Test;
-import controller.PetController;
+import controller.pet.PetController;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -25,10 +25,10 @@ public class PetControllerTest {
     @Test
     public void testAddAndGetPet() {
         Pet pet = new Cat("Luna", "British Shorthair", 1, new BigDecimal("200.00"));
-        boolean added = petController.addPet(pet, "CAT");
+        boolean added = PetController.addPet(pet, "CAT");
         assertTrue("Pet should be added successfully", added);
 
-        List<Pet> pets = petController.getPetsByFilter("CAT","ASC");
+        List<Pet> pets = PetController.getPetsByFilter("CAT","ASC");
         assertNotNull(pets);
         assertTrue(pets.stream().anyMatch(p -> p.getName().equals("Luna")));
     }
@@ -36,13 +36,13 @@ public class PetControllerTest {
     @Test
     public void testDeletePet() {
         Pet pet = new Cat("DeleteMe", "Random", 1, new BigDecimal("100.00"));
-        petController.addPet(pet, "CAT");
+        PetController.addPet(pet, "CAT");
 
-        List<Pet> pets = petController.getPetsByFilter("CAT","DESC");
+        List<Pet> pets = PetController.getPetsByFilter("CAT","DESC");
         Pet toDelete = pets.stream().filter(p -> p.getName().equals("DeleteMe")).findFirst().orElse(null);
 
         assertNotNull(toDelete);
-        boolean deleted = petController.deletePet(toDelete.getId());
+        boolean deleted = PetController.deletePet(toDelete.getId());
         assertTrue("Pet should be deleted successfully", deleted);
     }
 }

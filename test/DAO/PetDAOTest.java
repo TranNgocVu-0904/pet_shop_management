@@ -1,8 +1,8 @@
 package DAO;
 
-import dao.PetDAO;
-import model.Cat;
-import model.Pet;
+import dao.pet.PetDAO;
+import model.pet.Cat;
+import model.pet.Pet;
 import org.junit.Test;
 
 import java.math.BigDecimal;
