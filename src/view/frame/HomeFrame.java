@@ -1,4 +1,5 @@
-package view.frame;
+
+	package view.frame;
 
 import view.dialog.ProfileDialog;
 import view.panel.CustomerPanel;
@@ -7,123 +8,398 @@ import view.panel.ProductPanel;
 import view.panel.PetPanel;
 import view.panel.BillingPanel;
 import view.panel.HomePanel;
+import view.panel.ReportsPanel;
 import controller.user.AuthController;
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class HomeFrame extends JFrame {
     private final CardLayout layout = new CardLayout();
     private final JPanel contentPanel = new JPanel(layout);
+    private boolean isDarkTheme = false;
+    private JLabel statusLabel;
+    private JLabel timeLabel;
+    private Timer timeTimer;
+    
+    // Color schemes
+    private Color primaryColor = new Color(0x2C3E50);
+    private Color accentColor = new Color(0x3498DB);
+    private Color successColor = new Color(0x27AE60);
+    private Color warningColor = new Color(0xF39C12);
+    private Color dangerColor = new Color(0xE74C3C);
+    private Color lightBg = new Color(0xF8F9FA);
+    private Color darkBg = new Color(0x1A1A1A);
+    private Color cardBg = Color.WHITE;
 
     public HomeFrame(boolean isManager) {
-        setTitle("Petshop - Home");
+        initializeFrame();
+        setupUI(isManager);
+        startTimeUpdater();
+        setVisible(true);
+    }
+
+    private void initializeFrame() {
+        setTitle("Petshop Management System - Advanced Dashboard");
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setMinimumSize(new Dimension(1200, 800));
+        
+        // Set app icon
+        try {
+            setIconImage(Toolkit.getDefaultToolkit().getImage("images/petshop-icon.png"));
+        } catch (Exception e) {
+            // Icon not found, continue without it
+        }
+        
         getContentPane().setLayout(new BorderLayout());
+        getContentPane().setBackground(lightBg);
+    }
 
+    private void setupUI(boolean isManager) {
+        // Create main container with padding
+        JPanel mainContainer = new JPanel(new BorderLayout());
+        mainContainer.setBorder(new EmptyBorder(10, 10, 10, 10));
+        mainContainer.setBackground(lightBg);
+
+        // ===== Top Header Bar =====
+        JPanel headerPanel = createHeaderPanel(isManager);
+        
         // ===== Sidebar =====
+        JPanel sidebar = createModernSidebar(isManager);
+        
+        // ===== Content Area =====
+        setupContentArea();
+        
+        // ===== Status Bar =====
+        JPanel statusBar = createStatusBar();
+
+        // Add components to main container
+        mainContainer.add(headerPanel, BorderLayout.NORTH);
+        mainContainer.add(sidebar, BorderLayout.WEST);
+        mainContainer.add(contentPanel, BorderLayout.CENTER);
+        mainContainer.add(statusBar, BorderLayout.SOUTH);
+
+        getContentPane().add(mainContainer);
+    }
+
+    private JPanel createHeaderPanel(boolean isManager) {
+        JPanel headerPanel = new JPanel();
+        headerPanel.setLayout(new BorderLayout());
+        headerPanel.setBackground(primaryColor);
+        headerPanel.setPreferredSize(new Dimension(0, 70));
+        headerPanel.setBorder(new EmptyBorder(10, 20, 10, 20));
+
+        // Left side - Welcome message
+        JPanel welcomePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        welcomePanel.setOpaque(false);
+        
+        JLabel welcomeLabel = new JLabel("Welcome back, " + AuthController.currentUser.getUsername() + "!");
+        welcomeLabel.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        welcomeLabel.setForeground(Color.WHITE);
+        
+        JLabel roleLabel = new JLabel(isManager ? "Manager" : "Staff");
+        roleLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        roleLabel.setForeground(new Color(0xBDC3C7));
+        roleLabel.setBorder(new EmptyBorder(0, 20, 0, 0));
+        
+        welcomePanel.add(welcomeLabel);
+        welcomePanel.add(roleLabel);
+
+        // Right side - Theme toggle and profile
+        JPanel controlPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        controlPanel.setOpaque(false);
+
+        // Time display
+        timeLabel = new JLabel();
+        timeLabel.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        timeLabel.setForeground(new Color(0xBDC3C7));
+        updateTime();
+
+        // Theme toggle button
+        JButton themeToggle = createStyledButton("Theme", "Toggle Dark/Light Theme");
+        themeToggle.setPreferredSize(new Dimension(65, 35));
+        themeToggle.addActionListener(e -> toggleTheme());
+
+        // Profile button
+        JButton profileBtn = createStyledButton("Profile", "View Profile");
+        profileBtn.addActionListener(e -> new ProfileDialog(this));
+
+        controlPanel.add(timeLabel);
+        controlPanel.add(Box.createHorizontalStrut(15));
+        controlPanel.add(themeToggle);
+        controlPanel.add(Box.createHorizontalStrut(10));
+        controlPanel.add(profileBtn);
+
+        headerPanel.add(welcomePanel, BorderLayout.WEST);
+        headerPanel.add(controlPanel, BorderLayout.EAST);
+
+        return headerPanel;
+    }
+
+    private JPanel createModernSidebar(boolean isManager) {
         JPanel sidebar = new JPanel();
         sidebar.setLayout(new BoxLayout(sidebar, BoxLayout.Y_AXIS));
-        sidebar.setBackground(new Color(240, 236, 236));
-        sidebar.setPreferredSize(new Dimension(220, getHeight()));
+        sidebar.setBackground(cardBg);
+        sidebar.setPreferredSize(new Dimension(250, getHeight()));
+        sidebar.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createMatteBorder(0, 0, 0, 1, new Color(0xE0E0E0)),
+            new EmptyBorder(20, 15, 20, 15)
+        ));
 
-        // inside HomeFrame constructor
-        // Replace title:
-        sidebar.add(Box.createVerticalStrut(30));
-        JButton profileBtn = new JButton("👤 Profile");
-        profileBtn.setFont(new Font("SansSerif", Font.BOLD, 16));
-        profileBtn.setMaximumSize(new Dimension(180, 45));
-        profileBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
-        profileBtn.setFocusPainted(false);
-        profileBtn.setBackground(new Color(0x007BFF));
-        profileBtn.setForeground(Color.WHITE);
-        profileBtn.addActionListener(e -> {
-            new ProfileDialog(this);  
-        });
-        sidebar.add(profileBtn);
+        // Navigation title
+        JLabel navTitle = new JLabel("Navigation", SwingConstants.CENTER);
+        navTitle.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        navTitle.setForeground(primaryColor);
+        navTitle.setAlignmentX(Component.CENTER_ALIGNMENT);
+        navTitle.setBorder(new EmptyBorder(0, 0, 20, 0));
+        sidebar.add(navTitle);
 
-        // Show hello username
-        JLabel helloUser = new JLabel("Hello " + AuthController.currentUser.getUsername(), SwingConstants.CENTER);
-        helloUser.setForeground(new Color(0x476E91));
-        helloUser.setFont(new Font("SansSerif", Font.BOLD, 14));
-        helloUser.setBorder(BorderFactory.createEmptyBorder(10, 0, 20, 0));
-        helloUser.setAlignmentX(Component.CENTER_ALIGNMENT);
-        sidebar.add(helloUser);
-
-    
-
-        // ===== Navigation Buttons =====
-        addNavButton(sidebar, "Home", "home");
-        addNavButton(sidebar, "Pets", "pet");
-        addNavButton(sidebar, "Products", "product");
-        addNavButton(sidebar, "Customers", "customer");
-        if (isManager) addNavButton(sidebar, "Staff", "staff");
-        addNavButton(sidebar, "Bill", "bill");
+        // Navigation buttons
+        addModernNavButton(sidebar, "Dashboard", "home", accentColor);
+        addModernNavButton(sidebar, "Pets", "pet", new Color(0x9B59B6));
+        addModernNavButton(sidebar, "Products", "product", new Color(0xE67E22));
+        addModernNavButton(sidebar, "Customers", "customer", new Color(0x1ABC9C));
+        if (isManager) {
+            addModernNavButton(sidebar, "Staff", "staff", new Color(0x8E44AD));
+        }
+        addModernNavButton(sidebar, "Billing", "bill", successColor);
 
         // Spacer
         sidebar.add(Box.createVerticalGlue());
 
-        JButton reloadBtn = new JButton("Reload");
-        reloadBtn.setBackground(new Color(0x28a745)); // Green-ish
-        reloadBtn.setForeground(Color.WHITE);
-        reloadBtn.setFont(new Font("SansSerif", Font.BOLD, 16));
-        reloadBtn.setMaximumSize(new Dimension(180, 45));
-        reloadBtn.setAlignmentX(Component.CENTER_ALIGNMENT);  
-        reloadBtn.setFocusPainted(false);
+        // Quick actions section
+        JLabel actionsTitle = new JLabel("Quick Actions", SwingConstants.CENTER);
+        actionsTitle.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        actionsTitle.setForeground(primaryColor);
+        actionsTitle.setAlignmentX(Component.CENTER_ALIGNMENT);
+        actionsTitle.setBorder(new EmptyBorder(10, 0, 15, 0));
+        sidebar.add(actionsTitle);
 
-        // 🔁 Logic to reload UI
-        reloadBtn.addActionListener(e -> {
-            dispose(); // Close current window
-            new HomeFrame(AuthController.isManager()); // Reopen HomeFrame with same role
-        });
-
-        sidebar.add(Box.createVerticalStrut(10));
-        sidebar.add(reloadBtn);
-
+        // Quick action buttons
+        JButton refreshBtn = createActionButton("Refresh", warningColor);
+        refreshBtn.addActionListener(e -> refreshApplication());
         
-        JButton logoutBtn = new JButton("Logout");
-        logoutBtn.setBackground(new Color(0xFF837D)); // RED
-        logoutBtn.setForeground(Color.WHITE);
-        logoutBtn.setFont(new Font("SansSerif", Font.BOLD, 16));
-        logoutBtn.setMaximumSize(new Dimension(180, 45));
-        logoutBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
-        logoutBtn.addActionListener(e -> {
-            dispose();
-            new LoginFrame();
-        });
+        JButton logoutBtn = createActionButton("Logout", dangerColor);
+        logoutBtn.addActionListener(e -> logout());
 
+        sidebar.add(refreshBtn);
         sidebar.add(Box.createVerticalStrut(10));
         sidebar.add(logoutBtn);
-        sidebar.add(Box.createVerticalStrut(30));
 
-        // ===== Content =====
-        contentPanel.setBackground(Color.WHITE);
-        contentPanel.add(new HomePanel(), "home");
+        return sidebar;
+    }
+
+    private void setupContentArea() {
+        contentPanel.setBackground(lightBg);
+        contentPanel.setBorder(new EmptyBorder(15, 15, 15, 15));
+        
+        // Add panels with improved styling
+        HomePanel homePanel = new HomePanel();
+        homePanel.setParentFrame(this);
+        contentPanel.add(homePanel, "home");
         contentPanel.add(new PetPanel(), "pet");
         contentPanel.add(new ProductPanel(), "product");
         contentPanel.add(new CustomerPanel(), "customer");
         contentPanel.add(new StaffPanel(), "staff");
         contentPanel.add(new BillingPanel(), "bill");
+        contentPanel.add(new ReportsPanel(), "reports");
 
         layout.show(contentPanel, "home");
-
-        getContentPane().add(sidebar, BorderLayout.WEST);
-        getContentPane().add(contentPanel, BorderLayout.CENTER);
-        setVisible(true);
     }
 
-    private void addNavButton(JPanel sidebar, String name, String panelKey) {
-        JButton btn = new JButton(name);
-        btn.setMaximumSize(new Dimension(180, 45));
-        btn.setAlignmentX(Component.CENTER_ALIGNMENT);
-        btn.setFocusPainted(false);
-        btn.setBackground(new Color(0x7DC2FF));
-        btn.setForeground(Color.WHITE);
-        btn.setFont(new Font("SansSerif", Font.BOLD, 16));
-        btn.setMargin(new Insets(20, 20, 20, 20));
-        btn.addActionListener(e -> layout.show(contentPanel, panelKey));
+    private JPanel createStatusBar() {
+        JPanel statusBar = new JPanel(new BorderLayout());
+        statusBar.setBackground(new Color(0xF1F2F6));
+        statusBar.setPreferredSize(new Dimension(0, 30));
+        statusBar.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(0xDDD)),
+            new EmptyBorder(5, 15, 5, 15)
+        ));
 
-        sidebar.add(btn);
-        sidebar.add(Box.createVerticalStrut(5));
+        // Status info
+        statusLabel = new JLabel("System Ready | Connected to Database");
+        statusLabel.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+        statusLabel.setForeground(new Color(0x2F3542));
+
+        // Version info
+        JLabel versionLabel = new JLabel("v2.0 Enhanced");
+        versionLabel.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+        versionLabel.setForeground(new Color(0x57606F));
+
+        statusBar.add(statusLabel, BorderLayout.WEST);
+        statusBar.add(versionLabel, BorderLayout.EAST);
+
+        return statusBar;
+    }
+
+    private void addModernNavButton(JPanel parent, String text, String panelKey, Color color) {
+        JButton btn = new JButton(text);
+        btn.setMaximumSize(new Dimension(220, 50));
+        btn.setPreferredSize(new Dimension(220, 50));
+        btn.setAlignmentX(Component.CENTER_ALIGNMENT);
+        btn.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        btn.setFocusPainted(false);
+        btn.setBorderPainted(false);
+        btn.setBackground(color.brighter());
+        btn.setForeground(Color.WHITE);
+        btn.setBorder(new EmptyBorder(12, 20, 12, 20));
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+        // Hover effects
+        btn.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                btn.setBackground(color);
+                btn.setFont(new Font("Segoe UI", Font.BOLD, 15));
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                btn.setBackground(color.brighter());
+                btn.setFont(new Font("Segoe UI", Font.BOLD, 14));
+            }
+        });
+
+        btn.addActionListener(e -> {
+            layout.show(contentPanel, panelKey);
+            updateStatusForPanel(text);
+        });
+
+        parent.add(btn);
+        parent.add(Box.createVerticalStrut(8));
+    }
+
+    private JButton createStyledButton(String text, String tooltip) {
+        JButton btn = new JButton(text);
+        btn.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        btn.setFocusPainted(false);
+        btn.setBorderPainted(false);
+        btn.setBackground(accentColor);
+        btn.setForeground(Color.WHITE);
+        btn.setBorder(new EmptyBorder(8, 15, 8, 15));
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btn.setToolTipText(tooltip);
+
+        // Hover effect
+        btn.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                btn.setBackground(accentColor.darker());
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                btn.setBackground(accentColor);
+            }
+        });
+
+        return btn;
+    }
+
+    private JButton createActionButton(String text, Color color) {
+        JButton btn = new JButton(text);
+        btn.setMaximumSize(new Dimension(220, 45));
+        btn.setAlignmentX(Component.CENTER_ALIGNMENT);
+        btn.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        btn.setFocusPainted(false);
+        btn.setBorderPainted(false);
+        btn.setBackground(color);
+        btn.setForeground(Color.WHITE);
+        btn.setBorder(new EmptyBorder(10, 20, 10, 20));
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+        // Hover effect
+        btn.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                btn.setBackground(color.darker());
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                btn.setBackground(color);
+            }
+        });
+
+        return btn;
+    }
+
+    private void toggleTheme() {
+        isDarkTheme = !isDarkTheme;
+        
+        if (isDarkTheme) {
+            // Apply dark theme
+            lightBg = new Color(0x2C2C2C);
+            cardBg = new Color(0x3C3C3C);
+            primaryColor = new Color(0x1A1A1A);
+        } else {
+            // Apply light theme
+            lightBg = new Color(0xF8F9FA);
+            cardBg = Color.WHITE;
+            primaryColor = new Color(0x2C3E50);
+        }
+        
+        // Refresh the UI
+        SwingUtilities.invokeLater(() -> {
+            dispose();
+            new HomeFrame(AuthController.isManager());
+        });
+    }
+
+    private void refreshApplication() {
+        statusLabel.setText("Refreshing application...");
+        SwingUtilities.invokeLater(() -> {
+            dispose();
+            new HomeFrame(AuthController.isManager());
+        });
+    }
+
+    private void logout() {
+        int option = JOptionPane.showConfirmDialog(
+            this,
+            "Are you sure you want to logout?",
+            "Confirm Logout",
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.QUESTION_MESSAGE
+        );
+        
+        if (option == JOptionPane.YES_OPTION) {
+            if (timeTimer != null) {
+                timeTimer.stop();
+            }
+            dispose();
+            new LoginFrame();
+        }
+    }
+
+    private void updateStatusForPanel(String panelName) {
+        statusLabel.setText("Currently viewing: " + panelName);
+    }
+
+    private void startTimeUpdater() {
+        timeTimer = new Timer(1000, e -> updateTime());
+        timeTimer.start();
+    }
+
+    private void updateTime() {
+        if (timeLabel != null) {
+            String currentTime = LocalDateTime.now().format(
+                DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")
+            );
+            timeLabel.setText(currentTime);
+        }
+    }
+
+    @Override
+    public void dispose() {
+        if (timeTimer != null) {
+            timeTimer.stop();
+        }
+        super.dispose();
     }
 }

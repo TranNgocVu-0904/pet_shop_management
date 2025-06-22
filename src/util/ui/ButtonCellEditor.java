@@ -1,20 +1,12 @@
 package util.ui;
 
-import javax.swing.DefaultCellEditor;
-import javax.swing.JButton;
-import javax.swing.JTable;
-import javax.swing.SwingUtilities;
-import javax.swing.JCheckBox;
+import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-
-import java.awt.Component;
-
+import java.awt.*;
 import java.util.function.Consumer;
 
 public class ButtonCellEditor<T> extends DefaultCellEditor {
-    
     private final JButton button;
-    private boolean clicked;
     private final JTable table;
     private final Consumer<T> onEdit;
     private final Consumer<T> onDelete;
@@ -22,8 +14,7 @@ public class ButtonCellEditor<T> extends DefaultCellEditor {
     private final RowMapper<T> mapper;
 
     public ButtonCellEditor(JTable table, String action, RowMapper<T> mapper,
-                             Consumer<T> onEdit, Consumer<T> onDelete)
-    {
+                             Consumer<T> onEdit, Consumer<T> onDelete) {
         super(new JCheckBox());
         this.table = table;
         this.action = action;
@@ -32,74 +23,51 @@ public class ButtonCellEditor<T> extends DefaultCellEditor {
         this.onDelete = onDelete;
         this.button = new JButton();
 
-        // Label can be dynamic or passed from outside — simplified for clarity
-        switch (action) 
-        {
+        switch (action) {
             case "update" -> button.setText("✏️");
-            
             case "delete" -> button.setText("🗑️");
-            
             case "choose" -> button.setText("🛒");
-            
             default -> button.setText("?");
         }
 
         button.setOpaque(true);
-        
-        button.addActionListener(e -> 
-        {
-            SwingUtilities.invokeLater(() -> 
-            {
-                getCellEditorValue();      // Triggers action
-                fireEditingStopped();      // Ends editing cleanly
-            });
+        button.addActionListener(e -> {
+            int row = table.getSelectedRow();
+
+            if (row < 0 || row >= table.getRowCount()) return;
+
+            T entity = mapper.mapRow((DefaultTableModel) table.getModel(), row);
+
+            switch (action) {
+                case "update" -> {
+                    if (onEdit != null) onEdit.accept(entity);
+                }
+                case "delete" -> {
+                    if (onDelete != null) onDelete.accept(entity);
+                }
+                case "choose" -> {
+                    if (onEdit != null) onEdit.accept(entity);
+                }
+                default -> System.err.println("Unsupported action: " + action);
+            }
+
+            fireEditingStopped();
         });
     }
+
     @Override
     public Component getTableCellEditorComponent(JTable table, Object value,
-                                                 boolean isSelected, int row, int column) 
-    {
-        clicked = true;
+                                                 boolean isSelected, int row, int column) {
         return button;
     }
 
     @Override
-    public Object getCellEditorValue()
-    {
-        int row = table.getSelectedRow();
-
-        // Defensive check
-        if (row < 0 || row >= table.getRowCount()) return null;
-
-        // Defer all actions to allow table state to settle
-        SwingUtilities.invokeLater(() -> {
-            T entity = mapper.mapRow((DefaultTableModel) table.getModel(), row);
-
-            switch (action) 
-            {
-                case "update" -> 
-                {
-                    if (onEdit != null) onEdit.accept(entity);
-                }
-                case "delete" -> 
-                {
-                    if (onDelete != null) onDelete.accept(entity);
-                }
-                case "choose" -> 
-                {
-                    if (onEdit != null) onEdit.accept(entity); // generic choose handler
-                }
-                default -> System.err.println("Unsupported action: " + action);
-            }
-        });
-        
-        return null;
+    public Object getCellEditorValue() {
+        return null; // Không xử lý logic ở đây nữa
     }
 
     @Override
-    public boolean stopCellEditing()
-    {
-        clicked = false;
+    public boolean stopCellEditing() {
         return super.stopCellEditing();
     }
 }
